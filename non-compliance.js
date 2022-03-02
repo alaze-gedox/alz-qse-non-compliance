@@ -102,7 +102,7 @@ function countNC(idDate, titles, lines, fields) {
 * @param {object} elements - match between source and destination fields
 * @return {void}
 */
-function calculatePercentNC(fields) {
+function calculatePercentNC(lines, fields) {
     Object.keys(fields).forEach(key => {
         let baseFieldId = `#${fields[key]}`;
         
@@ -144,6 +144,6 @@ function getNonCompliance(idTable, idDate, fields) {
         countNC(idDate, titles, lines, fields);
 
         // PERCENT
-        calculatePercentNC(idDate, lines, fields);
+        calculatePercentNC(lines, fields);
     }, 3000);
 }
