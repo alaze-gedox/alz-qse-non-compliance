@@ -81,77 +81,101 @@ function caculateCounter(idDate, titles, lines) {
 * @param {object} lines - all lines to browse
 * @return {void}
 */
-function caculateCounterGlobal(idDate, titles, lines, nbLine) {
+function caculateCounterGlobal(idDate, titles, lines, elements) {
     let field = 'TABTotal';
     let tab = 'nbLine';
-    // Add 4 table row
-    $(`#lien_btnAjLigne_${field}`).click();
-    $(`#lien_btnAjLigne_${field}`).click();
-    $(`#lien_btnAjLigne_${field}`).click();
-    $(`#lien_btnAjLigne_${field}`).click();
-    // SET N-C TITLE
     $($($(`#${field}_1 tbody tr`)[0]).find("td input")[0]).val("Nb Contrôles");
-    $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("SUR");
-    $($($(`#${field}_1 tbody tr`)[2]).find("td input")[0]).val("SST");
-    $($($(`#${field}_1 tbody tr`)[3]).find("td input")[0]).val("SEC");
-    $($($(`#${field}_1 tbody tr`)[4]).find("td input")[0]).val("REA");
-    lines.toArray().forEach(line => {
-        let month = month2number(idDate, titles, line);
-        
-        if (month > 0) {
-            let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[month]);
-            let sumFieldGlobal = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
-            let sumFieldSURByMonth = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[month]);
-            let sumFieldSURGlobal = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[13]);
-            let sumFieldSSTByMonth = $($($(`#${field}_1 tbody tr`)[2]).find("td input")[month]);
-            let sumFieldSSTGlobal = $($($(`#${field}_1 tbody tr`)[2]).find("td input")[13]);
-            let sumFieldSECByMonth = $($($(`#${field}_1 tbody tr`)[3]).find("td input")[month]);
-            let sumFieldSECGlobal = $($($(`#${field}_1 tbody tr`)[3]).find("td input")[13]);
-            let sumFieldREAByMonth = $($($(`#${field}_1 tbody tr`)[4]).find("td input")[month]);
-            let sumFieldREAGlobal = $($($(`#${field}_1 tbody tr`)[4]).find("td input")[13]);
-            if (sumFieldByMonth.val() == ""){
-               sumFieldByMonth.val(Number(0));
+
+    elements.forEach(element => {
+        let fieldLocation = elements.indexOf(element);
+        $(`#lien_btnAjLigne_${field}`).click();
+        $($($(`#${field}_1 tbody tr`)[elements.indexOf(element)+1]).find("td input")[0]).val(element.title);
+
+        lines.toArray().forEach(line => {
+            let month = month2number(idDate, titles, line);
+
+            if(month > 0) {
+                let globalSumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[month]);
+                let globalsumField = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
+                let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[fieldLocation]).find("td input")[month]);
+                let sumField = $($($(`#${field}_1 tbody tr`)[fieldLocation]).find("td input")[13]);
+
+                globalSumFieldByMonth.val(Number(globalSumFieldByMonth.val()) + 1);
+                globalsumField.val(Number(globalsumField.val()) + 1);
+                sumFieldByMonth.val(Number(sumFieldByMonth.val()) + Number(element.number));
+                sumField.val(Number(sumField.val()) + Number(element.number));
             }
-             if (sumFieldGlobal.val() == ""){
-                sumFieldGlobal.val(Number(0));
-            }
-            if (sumFieldSURByMonth.val() == ""){
-               sumFieldSURByMonth.val(Number(0));
-            }
-             if (sumFieldSURGlobal.val() == ""){
-                sumFieldSURGlobal.val(Number(0));
-            }
-            if (sumFieldSSTByMonth.val() == ""){
-               sumFieldSSTByMonth.val(Number(0));
-            }
-             if (sumFieldSSTGlobal.val() == ""){
-                sumFieldSSTGlobal.val(Number(0));
-            }
-            if (sumFieldSECByMonth.val() == ""){
-               sumFieldSECByMonth.val(Number(0));
-            }
-             if (sumFieldSECGlobal.val() == ""){
-                sumFieldSECGlobal.val(Number(0));
-            }
-            if (sumFieldREAByMonth.val() == ""){
-               sumFieldREAByMonth.val(Number(0));
-            }
-             if (sumFieldREAGlobal.val() == ""){
-                sumFieldREAGlobal.val(Number(0));
-            }
-           
-            sumFieldByMonth.val(Number(sumFieldByMonth.val()) + 1);
-            sumFieldGlobal.val(Number(sumFieldGlobal.val()) + 1);
-            sumFieldSURByMonth.val(Number(sumFieldSURByMonth.val()) + Number(nbLine['SUR']));
-            sumFieldSURGlobal.val(Number(sumFieldSURGlobal.val()) + Number(nbLine['SUR']));
-            sumFieldSSTByMonth.val(Number(sumFieldSSTByMonth.val()) + Number(nbLine['SST']));
-            sumFieldSSTGlobal.val(Number(sumFieldSSTGlobal.val()) + Number(nbLine['SST']));
-            sumFieldSECByMonth.val(Number(sumFieldSECByMonth.val()) + Number(nbLine['SEC']));
-            sumFieldSECGlobal.val(Number(sumFieldSECGlobal.val()) + Number(nbLine['SEC']));
-            sumFieldREAByMonth.val(Number(sumFieldREAByMonth.val()) + Number(nbLine['REA']));
-            sumFieldREAGlobal.val(Number(sumFieldREAGlobal.val()) + Number(nbLine['REA']));
-        }
+        });
     });
+
+    // // Add 4 table row
+    // $(`#lien_btnAjLigne_${field}`).click();
+    // $(`#lien_btnAjLigne_${field}`).click();
+    // $(`#lien_btnAjLigne_${field}`).click();
+    // $(`#lien_btnAjLigne_${field}`).click();
+    // // SET N-C TITLE
+    // $($($(`#${field}_1 tbody tr`)[0]).find("td input")[0]).val("Nb Contrôles");
+    // $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("SUR");
+    // $($($(`#${field}_1 tbody tr`)[2]).find("td input")[0]).val("SST");
+    // $($($(`#${field}_1 tbody tr`)[3]).find("td input")[0]).val("SEC");
+    // $($($(`#${field}_1 tbody tr`)[4]).find("td input")[0]).val("REA");
+    // lines.toArray().forEach(line => {
+    //     let month = month2number(idDate, titles, line);
+        
+    //     if (month > 0) {
+    //         let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[month]);
+    //         let sumFieldGlobal = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
+    //         let sumFieldSURByMonth = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[month]);
+    //         let sumFieldSURGlobal = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[13]);
+    //         let sumFieldSSTByMonth = $($($(`#${field}_1 tbody tr`)[2]).find("td input")[month]);
+    //         let sumFieldSSTGlobal = $($($(`#${field}_1 tbody tr`)[2]).find("td input")[13]);
+    //         let sumFieldSECByMonth = $($($(`#${field}_1 tbody tr`)[3]).find("td input")[month]);
+    //         let sumFieldSECGlobal = $($($(`#${field}_1 tbody tr`)[3]).find("td input")[13]);
+    //         let sumFieldREAByMonth = $($($(`#${field}_1 tbody tr`)[4]).find("td input")[month]);
+    //         let sumFieldREAGlobal = $($($(`#${field}_1 tbody tr`)[4]).find("td input")[13]);
+    //         if (sumFieldByMonth.val() == ""){
+    //            sumFieldByMonth.val(Number(0));
+    //         }
+    //          if (sumFieldGlobal.val() == ""){
+    //             sumFieldGlobal.val(Number(0));
+    //         }
+    //         if (sumFieldSURByMonth.val() == ""){
+    //            sumFieldSURByMonth.val(Number(0));
+    //         }
+    //          if (sumFieldSURGlobal.val() == ""){
+    //             sumFieldSURGlobal.val(Number(0));
+    //         }
+    //         if (sumFieldSSTByMonth.val() == ""){
+    //            sumFieldSSTByMonth.val(Number(0));
+    //         }
+    //          if (sumFieldSSTGlobal.val() == ""){
+    //             sumFieldSSTGlobal.val(Number(0));
+    //         }
+    //         if (sumFieldSECByMonth.val() == ""){
+    //            sumFieldSECByMonth.val(Number(0));
+    //         }
+    //          if (sumFieldSECGlobal.val() == ""){
+    //             sumFieldSECGlobal.val(Number(0));
+    //         }
+    //         if (sumFieldREAByMonth.val() == ""){
+    //            sumFieldREAByMonth.val(Number(0));
+    //         }
+    //          if (sumFieldREAGlobal.val() == ""){
+    //             sumFieldREAGlobal.val(Number(0));
+    //         }
+           
+    //         sumFieldByMonth.val(Number(sumFieldByMonth.val()) + 1);
+    //         sumFieldGlobal.val(Number(sumFieldGlobal.val()) + 1);
+    //         sumFieldSURByMonth.val(Number(sumFieldSURByMonth.val()) + Number(nbLine['SUR']));
+    //         sumFieldSURGlobal.val(Number(sumFieldSURGlobal.val()) + Number(nbLine['SUR']));
+    //         sumFieldSSTByMonth.val(Number(sumFieldSSTByMonth.val()) + Number(nbLine['SST']));
+    //         sumFieldSSTGlobal.val(Number(sumFieldSSTGlobal.val()) + Number(nbLine['SST']));
+    //         sumFieldSECByMonth.val(Number(sumFieldSECByMonth.val()) + Number(nbLine['SEC']));
+    //         sumFieldSECGlobal.val(Number(sumFieldSECGlobal.val()) + Number(nbLine['SEC']));
+    //         sumFieldREAByMonth.val(Number(sumFieldREAByMonth.val()) + Number(nbLine['REA']));
+    //         sumFieldREAGlobal.val(Number(sumFieldREAGlobal.val()) + Number(nbLine['REA']));
+    //     }
+    // });
 }
 
 
@@ -270,112 +294,133 @@ function calculatePercentNC(lines, fields) {
 /*
 * iyggytccytc
 */
-function calculatePercentNCGlobal(lines, fields) {
+function calculatePercentNCGlobal(fields) {
     let counter = 'TABTotal';
-    Object.keys(fields).forEach(key => {
-        let field = `${fields[key]}`;
 
-        // Add table row
-        $(`#lien_btnAjLigne_${field}`).click();
-
-        // SET % TITLE
+    fields.forEach(field => {
+        $(`#lien_btnAjLigne_${field.id}`).click();
         $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("% Conformité");
 
-        // MONTHLY PERCENT
-        for (let i = 1; i <= 12; i++) {
+        for(let i = 1; i <= 13; i++) {
+            let fieldLocation = fields.indexOf(field) + 1;
             let percentFieldByMonth = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[i]);
             let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[i]);
-            let sumGlobalSURByMonth = $($($(`#${counter}_1 tbody tr`)[1]).find("td input")[i]);
-            let sumGlobalSSTByMonth = $($($(`#${counter}_1 tbody tr`)[2]).find("td input")[i]);
-            let sumGlobalSECByMonth = $($($(`#${counter}_1 tbody tr`)[3]).find("td input")[i]);
-            let sumGlobalREAByMonth = $($($(`#${counter}_1 tbody tr`)[4]).find("td input")[i]);
-            switch(field){
-                case 'SUR':
-                    percentFieldByMonth.val(
-                        Number(
-                            100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalSURByMonth.val())
-                        ).toFixed(2)
-                    );
-                    break;
-                case 'SST':
-                    percentFieldByMonth.val(
-                        Number(
-                            100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalSSTByMonth.val())
-                        ).toFixed(2)
-                    );
-                    break;
-                case 'SEC':
-                    percentFieldByMonth.val(
-                        Number(
-                            100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalSECByMonth.val())
-                        ).toFixed(2)
-                    );
-                    break;
-                case 'REA':
-                    percentFieldByMonth.val(
-                        Number(
-                            100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalREAByMonth.val())
-                        ).toFixed(2)
-                    );
-                    break;
-                default:
-                    percentFieldByMonth.val('-');
-                    break;
-            }
-            /*percentFieldByMonth.val(
+            let sumGlobalByMonth = $($($(`#${counter}_1 tbody tr`)[fieldLocation]).find("td input")[i]);
+
+            percentFieldByMonth.val(
                 Number(
-                    100-(100 * Number(sumFieldByMonth.val())) / Number($(`#month${i}Counter`).val())
+                    100 - (100 * Number(sumFieldByMonth.val())) / Number(sumGlobalByMonth.val())
                 ).toFixed(2)
-            );*/
+            );
         }
 
-        // GLOBAL PERCENT
-        let percentFieldGlobal = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[13]);
-        let sumFieldGlobal = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
-        let sumGlobalSURGlobal = $($($(`#${counter}_1 tbody tr`)[1]).find("td input")[13]);
-        let sumGlobalSSTGlobal = $($($(`#${counter}_1 tbody tr`)[2]).find("td input")[13]);
-        let sumGlobalSECGlobal = $($($(`#${counter}_1 tbody tr`)[3]).find("td input")[13]);
-        let sumGlobalREAGlobal = $($($(`#${counter}_1 tbody tr`)[4]).find("td input")[13]);
+
+    })
+
+    // Object.keys(fields).forEach(key => {
+    //     let field = `${fields[key]}`;
+
+    //     // Add table row
+    //     $(`#lien_btnAjLigne_${field}`).click();
+
+    //     // SET % TITLE
+    //     $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("% Conformité");
+
+    //     // MONTHLY PERCENT
+    //     for (let i = 1; i <= 12; i++) {
+    //         let percentFieldByMonth = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[i]);
+    //         let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[i]);
+    //         let sumGlobalSURByMonth = $($($(`#${counter}_1 tbody tr`)[1]).find("td input")[i]);
+    //         let sumGlobalSSTByMonth = $($($(`#${counter}_1 tbody tr`)[2]).find("td input")[i]);
+    //         let sumGlobalSECByMonth = $($($(`#${counter}_1 tbody tr`)[3]).find("td input")[i]);
+    //         let sumGlobalREAByMonth = $($($(`#${counter}_1 tbody tr`)[4]).find("td input")[i]);
+    //         switch(field){
+    //             case 'SUR':
+    //                 percentFieldByMonth.val(
+    //                     Number(
+    //                         100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalSURByMonth.val())
+    //                     ).toFixed(2)
+    //                 );
+    //                 break;
+    //             case 'SST':
+    //                 percentFieldByMonth.val(
+    //                     Number(
+    //                         100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalSSTByMonth.val())
+    //                     ).toFixed(2)
+    //                 );
+    //                 break;
+    //             case 'SEC':
+    //                 percentFieldByMonth.val(
+    //                     Number(
+    //                         100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalSECByMonth.val())
+    //                     ).toFixed(2)
+    //                 );
+    //                 break;
+    //             case 'REA':
+    //                 percentFieldByMonth.val(
+    //                     Number(
+    //                         100-(100 * Number(sumFieldByMonth.val())) / Number(sumGlobalREAByMonth.val())
+    //                     ).toFixed(2)
+    //                 );
+    //                 break;
+    //             default:
+    //                 percentFieldByMonth.val('-');
+    //                 break;
+    //         }
+    //         /*percentFieldByMonth.val(
+    //             Number(
+    //                 100-(100 * Number(sumFieldByMonth.val())) / Number($(`#month${i}Counter`).val())
+    //             ).toFixed(2)
+    //         );*/
+    //     }
+
+    //     // GLOBAL PERCENT
+    //     let percentFieldGlobal = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[13]);
+    //     let sumFieldGlobal = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
+    //     let sumGlobalSURGlobal = $($($(`#${counter}_1 tbody tr`)[1]).find("td input")[13]);
+    //     let sumGlobalSSTGlobal = $($($(`#${counter}_1 tbody tr`)[2]).find("td input")[13]);
+    //     let sumGlobalSECGlobal = $($($(`#${counter}_1 tbody tr`)[3]).find("td input")[13]);
+    //     let sumGlobalREAGlobal = $($($(`#${counter}_1 tbody tr`)[4]).find("td input")[13]);
         
-        /*percentFieldGlobal.val(
-            Number(
-                100-(100 * Number(sumFieldGlobal.val())) / Number(lines.length)
-            ).toFixed(2)
-        );*/
-        switch(field){
-            case 'SUR':
-                percentFieldGlobal.val(
-                    Number(
-                        100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalSURGlobal.val())
-                    ).toFixed(2)
-                );
-                break;
-            case 'SST':
-                percentFieldGlobal.val(
-                    Number(
-                        100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalSSTGlobal.val())
-                    ).toFixed(2)
-                );
-                break;
-            case 'SEC':
-                percentFieldGlobal.val(
-                    Number(
-                        100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalSECGlobal.val())
-                    ).toFixed(2)
-                );
-                break;
-            case 'REA':
-                percentFieldGlobal.val(
-                    Number(
-                        100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalREAGlobal.val())
-                    ).toFixed(2)
-                );
-                break;
-            default:
-                percentFieldGlobal.val('-');
-                break;
-        }
-    });
+    //     /*percentFieldGlobal.val(
+    //         Number(
+    //             100-(100 * Number(sumFieldGlobal.val())) / Number(lines.length)
+    //         ).toFixed(2)
+    //     );*/
+    //     switch(field){
+    //         case 'SUR':
+    //             percentFieldGlobal.val(
+    //                 Number(
+    //                     100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalSURGlobal.val())
+    //                 ).toFixed(2)
+    //             );
+    //             break;
+    //         case 'SST':
+    //             percentFieldGlobal.val(
+    //                 Number(
+    //                     100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalSSTGlobal.val())
+    //                 ).toFixed(2)
+    //             );
+    //             break;
+    //         case 'SEC':
+    //             percentFieldGlobal.val(
+    //                 Number(
+    //                     100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalSECGlobal.val())
+    //                 ).toFixed(2)
+    //             );
+    //             break;
+    //         case 'REA':
+    //             percentFieldGlobal.val(
+    //                 Number(
+    //                     100-(100 * Number(sumFieldGlobal.val())) / Number(sumGlobalREAGlobal.val())
+    //                 ).toFixed(2)
+    //             );
+    //             break;
+    //         default:
+    //             percentFieldGlobal.val('-');
+    //             break;
+    //     }
+    // });
 }
 
 /*
@@ -407,19 +452,19 @@ function getNonCompliance(idTable, idDate, fields) {
 /*
 * trrdtrdyrtc
 */
-function getNonComplianceGlobal(idTable, idDate, fields, nbFields) {
+function getNonComplianceGlobal(idTable, idDate, elements) {
     setTimeout(() => {
         let lines = $(`${idTable} tbody tr`);
         let titles = getTitles(idTable);
 
         // COUNTER
-        caculateCounterGlobal(idDate, titles, lines, nbFields);
+        caculateCounterGlobal(idDate, titles, lines, elements);
 
         // SUM
-        countNCGlobal(idDate, titles, lines, fields);
+        countNCGlobal(idDate, titles, lines, elements);
 
         // PERCENT
-        calculatePercentNCGlobal(lines, fields, nbFields);
+        calculatePercentNCGlobal(elements);
 
         // LINES
         $("#NBControle").val(lines.length);
@@ -444,5 +489,27 @@ var NBELEMENTS = {
     "SEC":  "29",
     "REA":  "14"
 };
+var ELEMENTS1 = [
+    {
+        "id": "REA",
+        "title": "REA",
+        "number": 14
+    },
+    {
+        "id": "SEC",
+        "title": "SEC",
+        "number": 29
+    },
+    {
+        "id": "SST",
+        "title": "SST",
+        "number": 6 
+    },
+    {
+        "id": "SUR",
+        "title": "SUR",
+        "number": 5
+    }
+];
 
-getNonComplianceGlobal(ID_TABLE, ID_DATE, ELEMENTS, NBELEMENTS)
+getNonComplianceGlobal(ID_TABLE, ID_DATE, ELEMENTS1)
