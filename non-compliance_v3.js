@@ -27,11 +27,23 @@ USAGE :
 */
 function getTitles(idTable) {
     let titles = [];
-    
+
     $(`${idTable} thead tr th`).toArray().forEach(
         element => titles.push(element.firstChild.nodeValue)
     );
     return titles;
+}
+
+function getTitlePosition(idTable, titleId) {
+    let titles = [];
+    $(`${idTable} thead tr th`).toArray().forEach(
+        element => titles.push(element.firstChild.nodeValue)
+    );
+    return titles.indexOf(titleId);
+}
+
+function getlineValueById(idTable, titleId, line) {
+    return $(line).find("td")[getTitlePosition(idTable, titleId)].firstChild;
 }
 
 /*
@@ -41,8 +53,9 @@ function getTitles(idTable) {
 * @param {Object} line - line in which the month is searched
 * @return {number} - month number. -1 if month not found
 */
-function month2number(idDate, titles, line) {
-    let childFullText = $(line).find("td")[titles.indexOf(idDate)].firstChild;
+function month2number(idTable, idDate, line) {
+    // let childFullText = $(line).find("td")[getTitlePosition(idDate)].firstChild;
+    let childFullText = getlineValueById(idTable, idDate, line);
     return childFullText ? Number(childFullText.nodeValue.split("/")[1]) : -1;
 }
 
@@ -56,6 +69,29 @@ function isNC(line, index) {
     return $(line).find('td')[index].firstChild.nodeValue == "N-C";
 }
 
+function setUpTable(tableId, title) {
+    $(`#lien_btnAjLigne_${tableId}`).click();
+    getTableInputByCoord(tableId, -1, 0).val(title);
+}
+
+function getTableInputByCoord(tableId, lineLocation, inputLocation) {
+    let line = $(`#${tableId}_1 tbody tr`).get(lineLocation);
+    let input = $(line).find("td input").get(inputLocation);
+    return $(input);
+}
+
+function countField(sumField, counter) {
+    sumField.val(Number(sumField.val()) + Number(counter));
+    return sumField.val();
+}
+
+function writeCounter(tableId, lineNumber, inputNumber, count) {
+    // MONTH
+    countField(getTableInputByCoord(tableId, lineNumber, inputNumber), count);
+    // GLOBAL
+    countField(getTableInputByCoord(tableId, lineNumber, 13), count);
+}
+
 /*
 * Function to count month iteration
 * @param {string} idDate - title of date column
@@ -66,7 +102,7 @@ function isNC(line, index) {
 function caculateCounter(idDate, titles, lines) {
     lines.toArray().forEach(line => {
         let month = month2number(idDate, titles, line);
-        
+
         if (month > 0) {
             let monthCounter = $(`#month${month}Counter`);
             monthCounter.val(Number(monthCounter.val()) + 1);
@@ -81,103 +117,25 @@ function caculateCounter(idDate, titles, lines) {
 * @param {object} lines - all lines to browse
 * @return {void}
 */
-function caculateCounterGlobal(idDate, titles, lines, elements) {
+function caculateCounterGlobal(idTable, idDate, lines, elements) {
     let field = 'TABTotal';
-    let tab = 'nbLine';
-    $($($(`#${field}_1 tbody tr`)[0]).find("td input")[0]).val("Nb Contrôles");
 
     elements.forEach(element => {
-        let fieldLocation = elements.indexOf(element);
-        $(`#lien_btnAjLigne_${field}`).click();
-        $($($(`#${field}_1 tbody tr`)[elements.indexOf(element)+1]).find("td input")[0]).val(element.title);
-
-        lines.toArray().forEach(line => {
-            let month = month2number(idDate, titles, line);
-
-            if(month > 0) {
-                let globalSumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[month]);
-                let globalsumField = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
-                let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[fieldLocation]).find("td input")[month]);
-                let sumField = $($($(`#${field}_1 tbody tr`)[fieldLocation]).find("td input")[13]);
-
-                globalSumFieldByMonth.val(Number(globalSumFieldByMonth.val()) + 1);
-                globalsumField.val(Number(globalsumField.val()) + 1);
-                sumFieldByMonth.val(Number(sumFieldByMonth.val()) + Number(element.number));
-                sumField.val(Number(sumField.val()) + Number(element.number));
-            }
-        });
+        setUpTable(field, element.title);
     });
 
-    // // Add 4 table row
-    // $(`#lien_btnAjLigne_${field}`).click();
-    // $(`#lien_btnAjLigne_${field}`).click();
-    // $(`#lien_btnAjLigne_${field}`).click();
-    // $(`#lien_btnAjLigne_${field}`).click();
-    // // SET N-C TITLE
-    // $($($(`#${field}_1 tbody tr`)[0]).find("td input")[0]).val("Nb Contrôles");
-    // $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("SUR");
-    // $($($(`#${field}_1 tbody tr`)[2]).find("td input")[0]).val("SST");
-    // $($($(`#${field}_1 tbody tr`)[3]).find("td input")[0]).val("SEC");
-    // $($($(`#${field}_1 tbody tr`)[4]).find("td input")[0]).val("REA");
-    // lines.toArray().forEach(line => {
-    //     let month = month2number(idDate, titles, line);
-        
-    //     if (month > 0) {
-    //         let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[month]);
-    //         let sumFieldGlobal = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
-    //         let sumFieldSURByMonth = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[month]);
-    //         let sumFieldSURGlobal = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[13]);
-    //         let sumFieldSSTByMonth = $($($(`#${field}_1 tbody tr`)[2]).find("td input")[month]);
-    //         let sumFieldSSTGlobal = $($($(`#${field}_1 tbody tr`)[2]).find("td input")[13]);
-    //         let sumFieldSECByMonth = $($($(`#${field}_1 tbody tr`)[3]).find("td input")[month]);
-    //         let sumFieldSECGlobal = $($($(`#${field}_1 tbody tr`)[3]).find("td input")[13]);
-    //         let sumFieldREAByMonth = $($($(`#${field}_1 tbody tr`)[4]).find("td input")[month]);
-    //         let sumFieldREAGlobal = $($($(`#${field}_1 tbody tr`)[4]).find("td input")[13]);
-    //         if (sumFieldByMonth.val() == ""){
-    //            sumFieldByMonth.val(Number(0));
-    //         }
-    //          if (sumFieldGlobal.val() == ""){
-    //             sumFieldGlobal.val(Number(0));
-    //         }
-    //         if (sumFieldSURByMonth.val() == ""){
-    //            sumFieldSURByMonth.val(Number(0));
-    //         }
-    //          if (sumFieldSURGlobal.val() == ""){
-    //             sumFieldSURGlobal.val(Number(0));
-    //         }
-    //         if (sumFieldSSTByMonth.val() == ""){
-    //            sumFieldSSTByMonth.val(Number(0));
-    //         }
-    //          if (sumFieldSSTGlobal.val() == ""){
-    //             sumFieldSSTGlobal.val(Number(0));
-    //         }
-    //         if (sumFieldSECByMonth.val() == ""){
-    //            sumFieldSECByMonth.val(Number(0));
-    //         }
-    //          if (sumFieldSECGlobal.val() == ""){
-    //             sumFieldSECGlobal.val(Number(0));
-    //         }
-    //         if (sumFieldREAByMonth.val() == ""){
-    //            sumFieldREAByMonth.val(Number(0));
-    //         }
-    //          if (sumFieldREAGlobal.val() == ""){
-    //             sumFieldREAGlobal.val(Number(0));
-    //         }
-           
-    //         sumFieldByMonth.val(Number(sumFieldByMonth.val()) + 1);
-    //         sumFieldGlobal.val(Number(sumFieldGlobal.val()) + 1);
-    //         sumFieldSURByMonth.val(Number(sumFieldSURByMonth.val()) + Number(nbLine['SUR']));
-    //         sumFieldSURGlobal.val(Number(sumFieldSURGlobal.val()) + Number(nbLine['SUR']));
-    //         sumFieldSSTByMonth.val(Number(sumFieldSSTByMonth.val()) + Number(nbLine['SST']));
-    //         sumFieldSSTGlobal.val(Number(sumFieldSSTGlobal.val()) + Number(nbLine['SST']));
-    //         sumFieldSECByMonth.val(Number(sumFieldSECByMonth.val()) + Number(nbLine['SEC']));
-    //         sumFieldSECGlobal.val(Number(sumFieldSECGlobal.val()) + Number(nbLine['SEC']));
-    //         sumFieldREAByMonth.val(Number(sumFieldREAByMonth.val()) + Number(nbLine['REA']));
-    //         sumFieldREAGlobal.val(Number(sumFieldREAGlobal.val()) + Number(nbLine['REA']));
-    //     }
-    // });
-}
+    lines.toArray().forEach(line => {
+        let month = month2number(idTable, idDate, line);
 
+        if(month > 0) {
+            writeCounter(field, 0, month, 1);
+            elements.forEach(element => {
+                let fieldLocation = elements.indexOf(element) + 1;
+                writeCounter(field, fieldLocation, month, element.number);
+            });
+        }
+    });
+}
 
 /*
 * Function to count N-C element by month and global
@@ -223,34 +181,41 @@ function countNC(idDate, titles, lines, fields) {
 * @param {object} elements - match between source and destination fields
 * @return {void}
 */
-function countNCGlobal(idDate, titles, lines, fields) {
-    lines.toArray().forEach(line => {
-        for (let i=0; i < titles.length; i++) {
-            let field = fields[titles[i]];
-            let fieldMonth = month2number(idDate, titles, line);
+function countNonComplianceItems(idTable, idDate, lines, items) {
+    items.forEach(element => {
+        let globalCountLine = items.indexOf(item) + 1;
+        setUpTable(item.id, "% Conformité");
+        
+        lines.toArray().forEach(line => {
+            let fieldMonth = month2number(idTable, idDate, line);
+            writeCounter(element.id, 0, fieldMonth, getlineValueById(element.id, line))
+        });
+        // for (let i=0; i < titles.length; i++) {
+        //     let field = fields[titles[i]];
+        //     let fieldMonth = month2number(idDate, titles, line);
 
-            // SET N-C TITLE
-            $($($(`#${field}_1 tbody tr`)[0]).find("td input")[0]).val("Total");
+        //     // SET N-C TITLE
+        //     $($($(`#${field}_1 tbody tr`)[0]).find("td input")[0]).val("Total");
 
-            // SET VALUES
-            if (typeof field != "undefined" && fieldMonth > 0) {
-                let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[fieldMonth]);
-                let sumFieldGlobal = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[13]);
+        //     // SET VALUES
+        //     if (typeof field != "undefined" && fieldMonth > 0) {
+        //         let sumFieldByMonth = $($($(`#${field.id}_1 tbody tr`)[0]).find("td input")[fieldMonth]);
+        //         let sumFieldGlobal = $($($(`#${field.id}_1 tbody tr`)[0]).find("td input")[13]);
 
-                sumFieldByMonth.val(Number(sumFieldByMonth.val()) + Number($(line).find('td')[i].firstChild.nodeValue));
-                sumFieldGlobal.val(Number(sumFieldGlobal.val()) + Number($(line).find('td')[i].firstChild.nodeValue));
+        //         sumFieldByMonth.val(Number(sumFieldByMonth.val()) + Number($(line).find('td')[i].firstChild.nodeValue));
+        //         sumFieldGlobal.val(Number(sumFieldGlobal.val()) + Number($(line).find('td')[i].firstChild.nodeValue));
 
-                /*if (isNC(line, i)) {
-                    // MONTHLY SUM
-                    sumFieldByMonth.val(Number(sumFieldByMonth.val()) + 1);
-                    sumFieldGlobal.val(Number(sumFieldGlobal.val()) + 1);
-                }*/
+        //         /*if (isNC(line, i)) {
+        //             // MONTHLY SUM
+        //             sumFieldByMonth.val(Number(sumFieldByMonth.val()) + 1);
+        //             sumFieldGlobal.val(Number(sumFieldGlobal.val()) + 1);
+        //         }*/
 
-                if (sumFieldByMonth.val() == ""){
-                    sumFieldByMonth.val(0);
-                }
-            }
-        }
+        //         if (sumFieldByMonth.val() == ""){
+        //             sumFieldByMonth.val(0);
+        //         }
+        //     }
+        // }
     });
 }
 
@@ -263,11 +228,11 @@ function calculatePercentNC(lines, fields) {
     Object.keys(fields).forEach(key => {
         let field = `${fields[key]}`;
 
+        setUpTable(field, "% Conformité");
         // Add table row
-        $(`#lien_btnAjLigne_${field}`).click();
-
+        // $(`#lien_btnAjLigne_${field}`).click();
         // SET % TITLE
-        $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("% Conformité");
+        // $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("% Conformité");
 
         // MONTHLY PERCENT
         for (let i = 1; i <= 12; i++) {
@@ -298,13 +263,15 @@ function calculatePercentNCGlobal(fields) {
     let counter = 'TABTotal';
 
     fields.forEach(field => {
+        let id = field.id;
+
         $(`#lien_btnAjLigne_${field.id}`).click();
-        $($($(`#${field}_1 tbody tr`)[1]).find("td input")[0]).val("% Conformité");
+        $($($(`#${id}_1 tbody tr`)[1]).find("td input")[0]).val("% Conformité");
 
         for(let i = 1; i <= 13; i++) {
             let fieldLocation = fields.indexOf(field) + 1;
-            let percentFieldByMonth = $($($(`#${field}_1 tbody tr`)[1]).find("td input")[i]);
-            let sumFieldByMonth = $($($(`#${field}_1 tbody tr`)[0]).find("td input")[i]);
+            let percentFieldByMonth = $($($(`#${id}_1 tbody tr`)[1]).find("td input")[i]);
+            let sumFieldByMonth = $($($(`#${id}_1 tbody tr`)[0]).find("td input")[i]);
             let sumGlobalByMonth = $($($(`#${counter}_1 tbody tr`)[fieldLocation]).find("td input")[i]);
 
             percentFieldByMonth.val(
@@ -313,8 +280,6 @@ function calculatePercentNCGlobal(fields) {
                 ).toFixed(2)
             );
         }
-
-
     })
 
     // Object.keys(fields).forEach(key => {
@@ -455,16 +420,14 @@ function getNonCompliance(idTable, idDate, fields) {
 function getNonComplianceGlobal(idTable, idDate, elements) {
     setTimeout(() => {
         let lines = $(`${idTable} tbody tr`);
-        let titles = getTitles(idTable);
 
-        // COUNTER
-        caculateCounterGlobal(idDate, titles, lines, elements);
+        // GLOBAL COUNTER
+        caculateCounterGlobal(idTable, idDate, lines, elements);
 
-        // SUM
-        countNCGlobal(idDate, titles, lines, elements);
-
+        // COUNT N-C
+        countNonComplianceItems(idTable, idDate, lines, elements);
+        
         // PERCENT
-        calculatePercentNCGlobal(elements);
 
         // LINES
         $("#NBControle").val(lines.length);
