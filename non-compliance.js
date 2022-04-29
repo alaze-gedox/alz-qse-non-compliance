@@ -46,7 +46,7 @@ class NonCompliance {
      * @param {Array} items - List of items to count
      */
     constructor(idDataTable, idTitleDate, items) {
-        this.idDataTable = "DIV_GROUPE".concat(idDataTable);
+        this.idDataTable = `table[id-groupe=DIV_GROUPE${idDataTable}]`;
         this.idTitleDate = idTitleDate;
         this.items = items;
         
@@ -120,7 +120,7 @@ class NonCompliance {
      * @returns {object} - Input
      */
     getTableInputByCoord(tableId, lineCoord, inputCoord) {
-        let line = $(`#${tableId}_1 tbody tr`).get(lineCoord);
+        let line = $(`#${tableId} tbody tr`).get(lineCoord);
         let input = $(line).find("td input").get(inputCoord);
         return $(input);
     }
@@ -196,12 +196,12 @@ class NonCompliance {
         // Here we are starting at 1 because first column contains titles.
         for (let column = 1; column <= 13; column++) {
             let globalItemCount = Number(
-                this.getTableInputByCoord(this.GLOBAL_COUNT_TABLE_ID, this.items.indexOf(item) + 1, column).val()
+                this.getTableInputByCoord(this.GLOBAL_COUNT_TABLE_ID.concat("_1"), this.items.indexOf(item) + 1, column).val()
             );
-            let resultInput = this.getTableInputByCoord(item.id, 1, column);
+            let resultInput = this.getTableInputByCoord(item.id.concat("_1"), 1, column);
             if (globalItemCount > 0) {
                 let compliancePercent = 100 - (
-                    (100 * Number(this.getTableInputByCoord(item.id, 0, column).val())) / globalItemCount
+                    (100 * Number(this.getTableInputByCoord(item.id.concat("_1"), 0, column).val())) / globalItemCount
                 ).toFixed(2);
                 resultInput.val(compliancePercent);
             } else {
