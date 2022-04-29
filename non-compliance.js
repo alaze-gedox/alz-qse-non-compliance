@@ -1,149 +1,232 @@
-/*
-USAGE :
-    CONST :
-        const ID_TABLE = {string}
-        const ID_DATE = {string}
-        const FIELDS = {
-            source     destination
-            {string}:  {string},
-            {string}:  {string},
-            {string}:  {string},
-            ...
-        }
-
-    CALL :
-        getNonCompliance(ID_TABLE, ID_DATE, FIELDS)
-*/
-
-/*
-* Function to get table titles
-* @param {string} idTable - table identifier
-* @return {Array} - array of table titles
-*/
-function getTitles(idTable) {
-    let titles = [];
-    
-    $(`${idTable} thead tr th`).toArray().forEach(
-        element => titles.push(element.firstChild.nodeValue)
-    );
-    return titles;
-}
-
-/*
-* Function to get line month
-* @param {string} idDate - title of date column
-* @param {Array} titles - array of table titles
-* @param {Object} line - line in which the month is searched
-* @return {number} - month number. -1 if month not found
-*/
-function month2number(idDate, titles, line) {
-    let childFullText = $(line).find("td")[titles.indexOf(idDate)].firstChild;
-    return childFullText ? Number(childFullText.nodeValue.split("/")[1]) : -1;
-}
-
-/*
-* Function to test if value is N-C
-* @param {object} line - line where test is done
-* @param {number} index - column number
-* @return {boolean} - true if value is N-C else false
-*/
-function isNC(line, index) {
-    return $(line).find('td')[index].firstChild.nodeValue == "N-C";
-}
-
-/*
-* Function to count month iteration
-* @param {string} idDate - title of date column
-* @param {Array} titles - array of table titles
-* @param {object} lines - all lines to browse
-* @return {void}
-*/
-function caculateCounter(idDate, titles, lines) {
-    lines.toArray().forEach(line => {
-        let month = month2number(idDate, titles, line);
+/**
+ * 
+ */
+class NonCompliance {
+    /**
+     * Constructor
+     * 
+     * @param {string} idDataTable - Data table name
+     * @param {string} idTitleDate - Title of date column
+     * @param {Array} items - List of items to count
+     */
+    constructor(idDataTable, idTitleDate, items) {
+        this.idDataTable = "DIV_GROUPE".concat(idDataTable);
+        this.idTitleDate = idTitleDate;
+        this.items = items;
         
-        if (month > 0) {
-            let monthCounter = $(`#month${month}Counter`);
-            monthCounter.val(Number(monthCounter.val()) + 1);
-        }
-    });
-}
-
-/*
-* Function to count N-C element by month and global
-* @param {string} idDate - title of date column
-* @param {Array} titles - array of table titles
-* @param {object} lines - all lines to browse
-* @param {object} elements - match between source and destination fields
-* @return {void}
-*/
-function countNC(idDate, titles, lines, fields) {
-    lines.toArray().forEach(line => {
-        for (let i=0; i < titles.length; i++) {
-            let field = fields[titles[i]];
-            let fieldMonth = month2number(idDate, titles, line);
-            
-            if (typeof field != "undefined" && fieldMonth > 0) {
-                if (isNC(line, i)) {
-                    // MONTHLY SUM
-                    let sumFieldByMonth = `#${field}${fieldMonth}Sum`;
-                    $(sumFieldByMonth).val(Number($(sumFieldByMonth).val()) + 1);
-                    // GLOBAL SUM
-                    let sumFieldGlobal = `#${field}Sum`;
-                    $(sumFieldGlobal).val(Number($(sumFieldGlobal).val()) + 1);
-                }
-            }
-        }
-    });
-}
-
-/*
-* Function to calculate N-C percent by month and global
-* @param {object} elements - match between source and destination fields
-* @return {void}
-*/
-function calculatePercentNC(lines, fields) {
-    Object.keys(fields).forEach(key => {
-        let baseFieldId = `#${fields[key]}`;
+        // CONST
+        this.GLOBAL_COORD = 13; // global column
+        this.ADD_ROW_BUTTON_BASE_ID = "#lien_btnAjLigne_"; // define by Qualios
+        this.GLOBAL_COUNT_TABLE_ID = "TABTotal";
+        this.GLOBAL_ITEMS_COUNT = "#NBControle";
         
-        // MONTHLY PERCENT
-        for (let i = 1; i <= 12; i++) {
-            $(`${baseFieldId}${i}Percent`).val(
-                Number(
-                    (100 * Number($(`${baseFieldId}${i}Sum`).val())) / Number($(`#month${i}Counter`).val())
-                ).toFixed(2)
-            );
-        }
-        
-        // GLOBAL PERCENT
-        $(`${baseFieldId}Percent`).val(
-            Number(
-                (100 * Number($(`${baseFieldId}Sum`).val())) / Number(lines.length)
-            ).toFixed(2)
+        // DATA TABLE LINES
+        this.dataLines = $(`${this.idDataTable} tbody tr`).toArray();
+        // DATA TABLE TITLES
+        this.tableTitles = []
+        $(`${this.idDataTable} thead tr th`).toArray().forEach(
+            element => this.tableTitles.push(element.firstChild.textContent)
         );
-        
-    });
-}
+    }
 
-/*
-* Function to count non compliance and to calculate non-compliance percent
-* @param {string} idTable - data table identifier
-* @param {string} idDate - title of date column
-* @param {object} elements - match between source and destination fields
-* @return {void}
-*/
-function getNonCompliance(idTable, idDate, fields) {
-    setTimeout(() => {
-        let lines = $(`${idTable} tbody tr`);
-        let titles = getTitles(idTable);
+    /**
+     * Get column position with column name
+     * 
+     * @param {string} idTitle - Column name
+     * @returns {number}
+     */
+    getTitlePosition(idTitle) {
+        return this.tableTitles.indexOf(idTitle);
+    }
 
-        // COUNTER
-        caculateCounter(idDate, titles, lines);
+    /**
+     * Get table data content of one line by tilte
+     * 
+     * @param {string} title - Column title
+     * @param {object} line - Line wich contains many input
+     * @returns {string}
+     */
+    getLineValueByTitle(title, line) {
+        return $(line).find("td").get(this.getTitlePosition(title)).firstChild.textContent;
+    }
 
-        // SUM
-        countNC(idDate, titles, lines, fields);
+    /**
+     * Get line month
+     * 
+     * @param {object} line - Line where month is looking for
+     * @returns {number}
+     */
+    lineMonth2number(line) {
+        let lineDate = this.getLineValueByTitle(this.idTitleDate, line);
+        return lineDate ? Number(lineDate.split("/")[1]) : -1;
+    }
+
+    /**
+     * Table setting up.
+     * Adding a row and a title
+     * 
+     * @param {string} idDataTable - Table which is setting up id
+     * @param {string} title - Row title
+     * @return {object} - Table
+     */
+    setUpTable(idDataTable, title) {
+        $(this.ADD_ROW_BUTTON_BASE_ID.concat(idDataTable)).click();
+        this.getTableInputByCoord(idDataTable, -1, 0).val(title);
+        return $(idDataTable)
+    }
+
+    /**
+     * Get table input by coordinates
+     * 
+     * @param {string} tableId - Table id where input is looking for
+     * @param {number} lineCoord - Line number
+     * @param {number} inputCoord - Column number
+     * @returns {object} - Input
+     */
+    getTableInputByCoord(tableId, lineCoord, inputCoord) {
+        let line = $(`#${tableId}_1 tbody tr`).get(lineCoord);
+        let input = $(line).find("td input").get(inputCoord);
+        return $(input);
+    }
+
+    /**
+     * Add value to current input field value
+     * 
+     * @param {object} inputField - Input field where value is added
+     * @param {number} value - Value to add
+     * @returns {object} - Input value
+     */
+    addToInputField(inputField, value) {
+        inputField.val(Number(inputField.val()) + Number(value));
+        return inputField.val();
+    }
+
+    /**
+     * Counting elements
+     * 
+     * @param {string} tableId - Table where items is writing
+     * @param {number} lineCoord - Line number
+     * @param {number} inputCoord - Column number
+     * @param {number} value - Value to add
+     * @returns {object} - table which has been updated
+     */
+    countMonthlyAndGlobal(tableId, lineCoord, inputCoord, value) {
+        this.addToInputField(this.getTableInputByCoord(tableId, lineCoord, inputCoord), value);
+        this.addToInputField(this.getTableInputByCoord(tableId, lineCoord, this.GLOBAL_COORD), value);
+        return $(tableId)
+    }
+
+    /**
+     * Counting global
+     */
+    fillGlobalCountingTable() {
+        // SETUP
+        this.items.forEach(item => {
+            this.setUpTable(this.GLOBAL_COUNT_TABLE_ID, item.title);
+        });
+
+        // COUNTING
+        this.dataLines.forEach(line => {
+            let monthColumn = this.lineMonth2number(line);
+
+            if (monthColumn > 0) {
+                // Count number items by month and global
+                this.countMonthlyAndGlobal(this.GLOBAL_COUNT_TABLE_ID, 0, monthColumn, 1);
+                // Count global number items by month and global
+                this.items.forEach(item => {
+                    let lineCoord = this.items.indexOf(item) + 1;
+                    this.countMonthlyAndGlobal(this.GLOBAL_COUNT_TABLE_ID, lineCoord, monthColumn, item.number);
+                });
+            }
+        })
+    }
+
+    /**
+     * Counting specific items
+     * 
+     * @param {object} item - Item which is added 
+     */
+    fillItemTable(item) {
+        // SETUP
+        this.setUpTable(item.id, "% Conformité");
+
+        // COUNTING
+        this.dataLines.forEach(line => {
+            let monthColumn = this.lineMonth2number(line);
+            this.countMonthlyAndGlobal(item.id, 0, monthColumn, this.getLineValueByTitle(item.id, line));
+        });
 
         // PERCENT
-        calculatePercentNC(lines, fields);
+        // Here we are starting at 1 because first column contains titles.
+        for (let column = 1; column <= 13; column++) {
+            let globalItemCount = Number(
+                this.getTableInputByCoord(this.GLOBAL_COUNT_TABLE_ID, this.items.indexOf(item) + 1, column).val()
+            );
+            let resultInput = this.getTableInputByCoord(item.id, 1, column);
+            if (globalItemCount > 0) {
+                let compliancePercent = 100 - (
+                    (100 * Number(this.getTableInputByCoord(item.id, 0, column).val())) / globalItemCount
+                ).toFixed(2);
+                resultInput.val(compliancePercent);
+            } else {
+                resultInput.val("N/A");
+            }
+        }
+    }
+
+    /**
+     * Main function
+     */
+    do() {
+        // Get all control
+        $(this.GLOBAL_ITEMS_COUNT).val(this.dataLines.length);
+        // Filling global counters table
+        this.fillGlobalCountingTable();
+        // Filling items tables
+        this.items.forEach(item => this.fillItemTable(item));
+    }
+}
+
+/**
+ * Function to execute items sum
+ * 
+ * @param {string} idDataTable - Table id where data are stored
+ * @param {string} idTitleDate - Column which contains date name
+ * @param {Array} items - List of items to sum
+ */
+function completeTables(idDataTable, idTitleDate, items) {
+    DisplayColumns('Row_Items', '1');
+    DisplayColumns('Filtres','0');
+    setTimeout(_ => {
+        let nc = new NonCompliance(idDataTable, idTitleDate, items);
+        nc.do();
     }, 3000);
 }
+
+/* USAGE EXEMPLE */
+/*var ID_DATA_TABLE = "table[name=TAB_DATA]";
+var ID_TITLE_DATE = "date de saisie";
+var ITEMS = [
+    {
+        "id": "REA",
+        "title": "REA",
+        "number": 14
+    },
+    {
+        "id": "SEC",
+        "title": "SEC",
+        "number": 29
+    },
+    {
+        "id": "SST",
+        "title": "SST",
+        "number": 6 
+    },
+    {
+        "id": "SUR",
+        "title": "SUR",
+        "number": 5
+    }
+]
+
+completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);*/
