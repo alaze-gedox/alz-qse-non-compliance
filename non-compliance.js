@@ -120,7 +120,7 @@ class NonCompliance {
      * @returns {object} - Input
      */
     getTableInputByCoord(tableId, lineCoord, inputCoord) {
-        let line = $(`#${tableId} tbody tr`).get(lineCoord);
+        let line = $(`#${tableId}_1 tbody tr`).get(lineCoord);
         let input = $(line).find("td input").get(inputCoord);
         return $(input);
     }
