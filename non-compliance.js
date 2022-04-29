@@ -10,7 +10,7 @@ class NonCompliance {
      * @param {Array} items - List of items to count
      */
     constructor(idDataTable, idTitleDate, items) {
-        this.idDataTable = idDataTable;
+        this.idDataTable = "DIV_GROUPE".concat(idDataTable);
         this.idTitleDate = idTitleDate;
         this.items = items;
         
@@ -194,7 +194,7 @@ class NonCompliance {
  * @param {string} idTitleDate - Column which contains date name
  * @param {Array} items - List of items to sum
  */
-function fillingTables(idDataTable, idTitleDate, items) {
+function completeTables(idDataTable, idTitleDate, items) {
     DisplayColumns('Row_Items', '1');
     DisplayColumns('Filtres','0');
     setTimeout(_ => {
@@ -229,4 +229,4 @@ var ITEMS = [
     }
 ]
 
-fillingTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);*/
+completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);*/
