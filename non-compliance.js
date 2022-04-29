@@ -1,5 +1,41 @@
+/*
+* Link to purge jsDelivr cache after an update "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@latest/non-compliance.js"
+*/
+
+/*
+* ==========================================
+* USAGE EXEMPLE
+* ==========================================
+* var ID_DATA_TABLE = "table[name=TAB_DATA]";
+* var ID_TITLE_DATE = "date de saisie";
+* var ITEMS = [
+*    {
+*        "id": "REA",
+*        "title": "REA",
+*        "number": 14
+*    },
+*    {
+*        "id": "SEC",
+*        "title": "SEC",
+*        "number": 29
+*    },
+*    {
+*        "id": "SST",
+*        "title": "SST",
+*        "number": 6 
+*    },
+*    {
+*        "id": "SUR",
+*        "title": "SUR",
+*        "number": 5
+*    }
+* ]
+*
+* completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);
+*/
+
 /**
- * 
+ * Class to calculate global non compliance
  */
 class NonCompliance {
     /**
@@ -202,31 +238,3 @@ function completeTables(idDataTable, idTitleDate, items) {
         nc.do();
     }, 3000);
 }
-
-/* USAGE EXEMPLE */
-/*var ID_DATA_TABLE = "table[name=TAB_DATA]";
-var ID_TITLE_DATE = "date de saisie";
-var ITEMS = [
-    {
-        "id": "REA",
-        "title": "REA",
-        "number": 14
-    },
-    {
-        "id": "SEC",
-        "title": "SEC",
-        "number": 29
-    },
-    {
-        "id": "SST",
-        "title": "SST",
-        "number": 6 
-    },
-    {
-        "id": "SUR",
-        "title": "SUR",
-        "number": 5
-    }
-]
-
-completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);*/
