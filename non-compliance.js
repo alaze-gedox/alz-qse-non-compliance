@@ -4,7 +4,7 @@
 
 /*
 * ==========================================
-* USAGE EXEMPLE
+* USAGE EXAMPLE
 * ==========================================
 * var ID_DATA_TABLE = "table[name=TAB_DATA]";
 * var ID_TITLE_DATE = "date de saisie";
