@@ -35,7 +35,9 @@
 */
 
 /**
- * Class to calculate global non compliance
+ * Abstract class to calculate non compliance
+ * 
+ * @class NonCompliance
  */
 class NonCompliance {
     /**
@@ -46,6 +48,11 @@ class NonCompliance {
      * @param {Array} items - List of items to count
      */
     constructor(idDataTable, idTitleDate, items) {
+        // ABSTRACT
+        if (this.constructor == NonCompliance) {
+            throw new Error("Abstract class can't be instanciate");
+        }
+
         this.idDataTable = `table[id-groupe=DIV_GROUPE${idDataTable}]`;
         this.idTitleDate = idTitleDate;
         this.items = items;
@@ -138,7 +145,7 @@ class NonCompliance {
     }
 
     /**
-     * Counting elements
+     * Counting elements on the same table
      * 
      * @param {string} tableId - Table where items is writing
      * @param {number} lineCoord - Line number
@@ -149,9 +156,32 @@ class NonCompliance {
     countMonthlyAndGlobal(tableId, lineCoord, inputCoord, value) {
         this.addToInputField(this.getTableInputByCoord(tableId, lineCoord, inputCoord), value);
         this.addToInputField(this.getTableInputByCoord(tableId, lineCoord, this.GLOBAL_COORD), value);
-        return $(tableId)
+
+        return $(tableId);
     }
 
+    // TODO: doc
+    calculateCompliancePercent(item, targetLine, nonComplianceCountLine, month) {
+        let percent = "N/A";
+        let targetInputField = this.getTableInputByCoord(item.id, targetLine, month);
+        let nonComplianceValue = Number(this.getTableInputByCoord(item.id, nonComplianceCountLine, month).val());
+        let globalComplianceValue = Number(
+            this.getTableInputByCoord(this.GLOBAL_COUNT_TABLE_ID, this.items.indexOf(item) + 1, column).val()
+        );
+
+        if (globalComplianceValue > 0) {
+            percent = 100 - (
+                (100 * nonComplianceValue) / globalComplianceValue
+            ).toFixed(2);
+        }
+
+        targetInputField.val(percent);
+        return targetInputField;
+    }
+}
+
+
+class NonComplianceByCategories extends NonCompliance {
     /**
      * Counting global
      */
@@ -162,6 +192,7 @@ class NonCompliance {
         });
 
         // COUNTING
+        let increment = 1;
         this.dataLines.forEach(line => {
             let monthColumn = this.lineMonth2number(line);
 
@@ -171,7 +202,7 @@ class NonCompliance {
                 // Count global number items by month and global
                 this.items.forEach(item => {
                     let lineCoord = this.items.indexOf(item) + 1;
-                    this.countMonthlyAndGlobal(this.GLOBAL_COUNT_TABLE_ID, lineCoord, monthColumn, item.number);
+                    this.countMonthlyAndGlobal(this.GLOBAL_COUNT_TABLE_ID, lineCoord, monthColumn, item.number)
                 });
             }
         })
@@ -182,7 +213,7 @@ class NonCompliance {
      * 
      * @param {object} item - Item which is added 
      */
-    fillItemTable(item) {
+    fillCategoriesTables(item) {
         // SETUP
         this.setUpTable(item.id, "% Conformité");
 
@@ -195,18 +226,7 @@ class NonCompliance {
         // PERCENT
         // Here we are starting at 1 because first column contains titles.
         for (let column = 1; column <= 13; column++) {
-            let globalItemCount = Number(
-                this.getTableInputByCoord(this.GLOBAL_COUNT_TABLE_ID, this.items.indexOf(item) + 1, column).val()
-            );
-            let resultInput = this.getTableInputByCoord(item.id, 1, column);
-            if (globalItemCount > 0) {
-                let compliancePercent = 100 - (
-                    (100 * Number(this.getTableInputByCoord(item.id, 0, column).val())) / globalItemCount
-                ).toFixed(2);
-                resultInput.val(compliancePercent);
-            } else {
-                resultInput.val("N/A");
-            }
+            this.calculateCompliancePercent(item, 1, 0, column);
         }
     }
 
@@ -219,9 +239,14 @@ class NonCompliance {
         // Filling global counters table
         this.fillGlobalCountingTable();
         // Filling items tables
-        this.items.forEach(item => this.fillItemTable(item));
+        this.items.forEach(item => this.fillCategoriesTables(item));
     }
 }
+
+class NonComplianceByItems extends NonCompliace {
+
+}
+
 
 /**
  * Function to execute items sum
@@ -230,11 +255,11 @@ class NonCompliance {
  * @param {string} idTitleDate - Column which contains date name
  * @param {Array} items - List of items to sum
  */
-function completeTables(idDataTable, idTitleDate, items) {
+function nonComplianceByCategories(idDataTable, idTitleDate, items) {
     DisplayColumns('Row_Items', '1');
     DisplayColumns('Filtres','0');
     setTimeout(_ => {
-        let nc = new NonCompliance(idDataTable, idTitleDate, items);
-        nc.do();
+        let ncbc = new NonComplianceByCategories(idDataTable, idTitleDate, items);
+        ncbc.do();
     }, 3000);
 }
