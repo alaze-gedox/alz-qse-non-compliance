@@ -1,5 +1,5 @@
 /*
-* Link to purge jsDelivr cache after an update "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@latest/non-compliance.js"
+* Link to purge jsDelivr cache after an update "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@main/non-compliance.js"
 */
 
 /*
