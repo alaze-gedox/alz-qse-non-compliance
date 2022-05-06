@@ -195,9 +195,9 @@ class NonCompliance {
         // Get all control
         $(this.GLOBAL_ITEMS_COUNT).val(this.dataLines.length);
         // Filling global counters table
-        this.fillGlobalCountingTable();
+        this.fillGlobalCounting();
         // Filling items tables
-        this.elements.forEach(category => this.fillCategoriesTables(category));
+        this.elements.forEach(category => this.fillElementsTables(category));
     }
 }
 
@@ -211,7 +211,7 @@ class NonComplianceByCategories extends NonCompliance {
     /**
      * Counting global
      */
-    fillGlobalCountingTable() {
+    fillGlobalCounting() {
         // SETUP
         this.elements.forEach(category => {
             this.setUpTable(this.GLOBAL_COUNT_TABLE_ID, category.title);
@@ -238,7 +238,7 @@ class NonComplianceByCategories extends NonCompliance {
      * 
      * @param {object} category - Item which is added 
      */
-    fillCategoriesTables(category) {
+    fillElementsTables(category) {
         // SETUP
         this.setUpTable(category.id, this.TITLE_COMPLIANCE_PERCENT);
 
@@ -301,7 +301,7 @@ class NonComplianceByItems extends NonCompliance {
         });
     }
 
-    fillElementsTable(item) {
+    fillElementsTables(item) {
         // SETUP TABLE
         this.setUpTable(item.id, this.TITLE_COMPLIANCE_PERCENT);
 
