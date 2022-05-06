@@ -291,7 +291,7 @@ class NonComplianceByItems extends NonCompliance {
         return $(`month${month}Counter`);
     }
 
-    fillGlobalCountingTable() {
+    fillGlobalCounting() {
         this.dataLines.forEach(line => {
             let month = this.lineMonth2number(line);
 
