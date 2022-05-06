@@ -335,7 +335,7 @@ class NonComplianceByItems extends NonCompliance {
 function nonComplianceByItems(idDataTable, idTitleDate, items, nonComplianceValue) {
     displayTables();
     setTimeout(_ => {
-        let ncbi = NonComplianceByItems(idDataTable, idTitleDate, items, nonComplianceValue);
+        let ncbi = new NonComplianceByItems(idDataTable, idTitleDate, items, nonComplianceValue);
         ncbi.do();
     }, 3000);
 }
