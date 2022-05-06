@@ -307,7 +307,7 @@ class NonComplianceByItems extends NonCompliance {
 
         // COUNTING NON COMPLIANCE
         this.dataLines.forEach(line => {
-            if (this.getLineValueByTitle(item.id, line) == this.NON_COMPLIANCE_VALUE) {
+            if (this.getLineValueByTitle(item.table, line) == this.NON_COMPLIANCE_VALUE) {
                 let month = this.lineMonth2number(line);
                 this.countMonthlyAndGlobal(item.id, 0, month, 1);
             }
