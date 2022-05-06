@@ -288,7 +288,7 @@ class NonComplianceByItems extends NonCompliance {
     }
 
     getGlobalCounterInput(month) {
-        return $(`month${month}Counter`);
+        return $(`#month${month}Counter`);
     }
 
     fillGlobalCounting() {
