@@ -1,10 +1,10 @@
 /*
 * 
 * Link to purge jsDelivr cache after an update :
-*   "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@<BRANCH NAME>/non-compliance.js"
+*   "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@<BRANCH NAME>/quael.js"
 *
 * Link to include in Qualios to import lib :
-*   "https://cdn.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@<BRANCH NAME>/non-compliance.js"
+*   "https://cdn.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@<BRANCH NAME>/quael.js"
 */
 
 
