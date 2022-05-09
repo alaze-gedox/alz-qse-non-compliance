@@ -370,7 +370,7 @@ class NonComplianceByItems extends NonCompliance {
                 this.getTableInputByCoord(item.id, 0, 13),
                 $(this.GLOBAL_ITEMS_COUNT)
             )
-        )
+        );
     }
 }
 
