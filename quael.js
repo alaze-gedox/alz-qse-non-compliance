@@ -355,7 +355,7 @@ class NonComplianceByItems extends NonCompliance {
         });
 
         // PERCENT COMPLIANCE
-        for (let column = 1; column <= 13; column++) {
+        for (let column = 1; column <= 12; column++) {
             this.getTableInputByCoord(item.id, 1, column).val(
                 this.calculateCompliancePercent(
                     this.getTableInputByCoord(item.id, 0, column),
@@ -363,6 +363,14 @@ class NonComplianceByItems extends NonCompliance {
                 )
             );
         }
+
+        // GLOBAL PERCENT
+        this.getTableInputByCoord(item.id, 1, 13).val(
+            this.calculateCompliancePercent(
+                this.getTableInputByCoord(item.id, 0, 13),
+                $(this.GLOBAL_ITEMS_COUNT)
+            )
+        )
     }
 }
 
