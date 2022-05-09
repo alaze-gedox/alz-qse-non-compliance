@@ -251,7 +251,7 @@ class NonComplianceByCategories extends NonCompliance {
 * ------------------------------------------
 * var ID_DATA_TABLE = "TDBTEST";
 * var ID_TITLE_DATE = "date de saisie";
-* var ITEMS = [
+* var CATEGORIES = [
 *    {
 *        "id": "REA",
 *        "title": "REA",
@@ -274,7 +274,7 @@ class NonComplianceByCategories extends NonCompliance {
 *    }
 * ]
 *
-* completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);
+* nonComplianceByCategories(ID_DATA_TABLE, ID_TITLE_DATE, CATEGORIES);
 */
 
 /**
@@ -381,7 +381,7 @@ class NonComplianceByItems extends NonCompliance {
 * ------------------------------------------
 * var ID_TABLE = "TDBTEST";
 * var ID_DATE = "date de saisie";
-* var ELEMENTS = [
+* var ITEMS = [
 *     {'id': 'REAPlaceurPresentArriveeAvion', 'table': 'ConformiteA1'},
 *     {'id': 'REAEquipePresente', 'table': 'ConformiteA2'},
 *     {'id': 'REACEStorno', 'table': 'ConformiteA3'},
@@ -389,7 +389,7 @@ class NonComplianceByItems extends NonCompliance {
 *     {'id': 'SECAbsenceEpandage', 'table': 'ConformiteA5'},
 * ]
 *
-* nonComplianceByItems(ID_TABLE, ID_DATE, ELEMENTS, "N-C");
+* nonComplianceByItems(ID_TABLE, ID_DATE, ITEMS, "N-C");
 */
 
 /**
