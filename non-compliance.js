@@ -1,44 +1,23 @@
 /*
-* Link to purge jsDelivr cache after an update "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@main/non-compliance.js"
-*/
-
-/*
-* ==========================================
-* USAGE EXAMPLE
-* ==========================================
-* var ID_DATA_TABLE = "table[name=TAB_DATA]";
-* var ID_TITLE_DATE = "date de saisie";
-* var ITEMS = [
-*    {
-*        "id": "REA",
-*        "title": "REA",
-*        "number": 14
-*    },
-*    {
-*        "id": "SEC",
-*        "title": "SEC",
-*        "number": 29
-*    },
-*    {
-*        "id": "SST",
-*        "title": "SST",
-*        "number": 6 
-*    },
-*    {
-*        "id": "SUR",
-*        "title": "SUR",
-*        "number": 5
-*    }
-* ]
+* 
+* Link to purge jsDelivr cache after an update :
+*   "https://purge.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@<BRANCH NAME>/non-compliance.js"
 *
-* completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);
+* Link to include in Qualios to import lib :
+*   "https://cdn.jsdelivr.net/gh/alaze-gedox/alz-qse-non-compliance@<BRANCH NAME>/non-compliance.js"
 */
 
+
+// ==========================================
+//  BASE
+// ==========================================
+/**
+ * Displaying tables when date are selected.
+ */
 function displayTables() {
     DisplayColumns('Row_Items', '1');
     DisplayColumns('Filtres','0');
 }
-
 
 /**
  * Abstract class to calculate non compliance
@@ -201,6 +180,10 @@ class NonCompliance {
     }
 }
 
+
+// ==========================================
+//  NON COMPLIANCE BY CATEGORIES
+// ==========================================
 /**
  * Class to count and calculate non compliance by QSE categories
  * 
@@ -234,7 +217,7 @@ class NonComplianceByCategories extends NonCompliance {
     }
 
     /**
-     * Counting specific items
+     * Counting specific category
      * 
      * @param {object} category - Item which is added 
      */
@@ -261,12 +244,45 @@ class NonComplianceByCategories extends NonCompliance {
     }
 }
 
+
+/*
+* ------------------------------------------
+* USAGE EXAMPLE
+* ------------------------------------------
+* var ID_DATA_TABLE = "TDBTEST";
+* var ID_TITLE_DATE = "date de saisie";
+* var ITEMS = [
+*    {
+*        "id": "REA",
+*        "title": "REA",
+*        "number": 14
+*    },
+*    {
+*        "id": "SEC",
+*        "title": "SEC",
+*        "number": 29
+*    },
+*    {
+*        "id": "SST",
+*        "title": "SST",
+*        "number": 6 
+*    },
+*    {
+*        "id": "SUR",
+*        "title": "SUR",
+*        "number": 5
+*    }
+* ]
+*
+* completeTables(ID_DATA_TABLE, ID_TITLE_DATE, ITEMS);
+*/
+
 /**
  * Function to calls NonComplianceByCategories.do()
  * 
  * @param {string} idDataTable - Table id where data are stored
  * @param {string} idTitleDate - Column which contains date name
- * @param {Array} categories - List of categories to sum
+ * @param {Array} categories - List of QSE categories
  */
 function nonComplianceByCategories(idDataTable, idTitleDate, categories) {
     displayTables();
@@ -277,20 +293,40 @@ function nonComplianceByCategories(idDataTable, idTitleDate, categories) {
 }
 
 
+// ==========================================
+//  NON COMPLIANCE BY ITEMS
+// ==========================================
 /**
- * 
+ * Class to count non-compliance by forms items and to calculate compliance rate
  */
 class NonComplianceByItems extends NonCompliance {
 
+    /**
+     * Constructor
+     * 
+     * @param {string} idDataTable - Data table name
+     * @param {string} idTitleDate - Title of date column
+     * @param {array} elements - List of elements to count
+     * @param {string} nonComplianceValue - Value if QSE form anwser is "non-compliant"
+     */
     constructor(idDataTable, idTitleDate, elements, nonComplianceValue) {
         super(idDataTable, idTitleDate, elements);
         this.NON_COMPLIANCE_VALUE = nonComplianceValue;
     }
 
+    /**
+     * Get input to count data with month number
+     * 
+     * @param {int} month - Month number
+     * @returns 
+     */
     getGlobalCounterInput(month) {
         return $(`#month${month}Counter`);
     }
 
+    /**
+     * Counting Global
+     */
     fillGlobalCounting() {
         this.dataLines.forEach(line => {
             let month = this.lineMonth2number(line);
@@ -301,6 +337,11 @@ class NonComplianceByItems extends NonCompliance {
         });
     }
 
+    /**
+     * Counting by item
+     * 
+     * @param {object} item 
+     */
     fillElementsTables(item) {
         // SETUP TABLE
         this.setUpTable(item.id, this.TITLE_COMPLIANCE_PERCENT);
@@ -325,12 +366,33 @@ class NonComplianceByItems extends NonCompliance {
     }
 }
 
+
+/*
+* ------------------------------------------
+* USAGE EXAMPLE
+* ------------------------------------------
+* var ID_TABLE = "TDBTEST";
+* var ID_DATE = "date de saisie";
+* var ELEMENTS = [
+*     {'id': 'REAPlaceurPresentArriveeAvion', 'table': 'ConformiteA1'},
+*     {'id': 'REAEquipePresente', 'table': 'ConformiteA2'},
+*     {'id': 'REACEStorno', 'table': 'ConformiteA3'},
+*     {'id': 'SECProcedureFOD', 'table': 'ConformiteA4'},
+*     {'id': 'SECAbsenceEpandage', 'table': 'ConformiteA5'},
+* ]
+*
+* nonComplianceByItems(ID_TABLE, ID_DATE, ELEMENTS, "N-C");
+*/
+
 /**
+ * User must call this function
+ *  to count non-compliance by forms items
+ *  and to calculate compliance rate
  * 
- * @param {*} idDataTable 
- * @param {*} idTitleDate 
- * @param {*} items 
- * @param {*} nonComplianceValue 
+ * @param {*} idDataTable - Table id where data are stored
+ * @param {*} idTitleDate - Column which contains date name
+ * @param {*} items - List of QSE form items
+ * @param {*} nonComplianceValue - Value if QSE form anwser is "non-compliant"
  */
 function nonComplianceByItems(idDataTable, idTitleDate, items, nonComplianceValue) {
     displayTables();
