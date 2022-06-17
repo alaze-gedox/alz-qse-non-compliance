@@ -107,21 +107,29 @@ function AfficheObjTBord(pCalque, url, pFirstTime, pTabCalque, pIndiceCalque) {
         + "&UtiCode=" + jQueryAppli.find("#Uti_UtiCode").val())
 }
 
-
-{
+$.ajax({
+	url: `${location.protocol}//${location.host}/`,
+	method: "GET",
+	headers: {"Content-Type": lFormatURLEncoded},
+	data: {},
+	success: response => {},
+}).done(() => {})
+var tableResult = calculFiltreObjTbord(firstTab.getAttribute("FILTRE").split("@@;@@"), false, 0, `${location.protocol}//${location.host}/`);
+var data = {
 	NomObj: firstTab.id,
-	Param: EncodeParametres(firstTab.getAttribute("PARAM")),
-	Filtre: EncodeParametres(firstTab.getAttribute("FILTRE")),
-	RelCritereUti: EncodeParametres(firstTab.getAttribute("RELCRITEREUTI")),
-	Orient: EncodeParametres(firstTab.getAttribute("ORIENTATION")),
-	ModCode: EncodeParametres(firstTab.getAttribute("MODCODE")),
-	Op: EncodeParametres(firstTab.getAttribute("TAG")),
-	Refresh: EncodeParametres(calculFiltreObjTbord(firstTab.getAttribute("FILTRE").split("@@;@@"), false, 0, `${location.protocol}//${location.host}/`)),
+	Param: firstTab.getAttribute("PARAM"),
+	Filtre: tableResult[1],
+	RelCritereUti: firstTab.getAttribute("RELCRITEREUTI"),
+	Orient: firstTab.getAttribute("ORIENTATION"),
+	ModCode: firstTab.getAttribute("MODCODE"),
+	Op: firstTab.getAttribute("TAG"),
+	Refresh: tableResult[0],
 	detectDansLappli: detectDansLappli(),
 	UtiCode: jQueryAppli.find("#Uti_UtiCode").val()
 }
-https://qualios.ast.aero/servlet/Tbord.AfficheObjetStat
-?NomObj=TDBControleOpeGalerie&Param=&Filtre=%2D1%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21datedesaisie%40%40%3B%40%405%40%40%3B%40%4001%2F01%2F2021%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%402%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21datedesaisie%40%40%3B%40%404%40%40%3B%40%4031%2F12%2F2022%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%402%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21compagnie%40%40%3B%40%400%40%40%3B%40%40%5BTous%5D%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%400%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21Entite%40%40%3B%40%400%40%40%3B%40%40%5BTous%5D%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%400%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21Plateforme%40%40%3B%40%400%40%40%3B%40%40%5BTous%5D%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%400%40%40%3B%40%40&RelCritereUti=2&Orient=1&ModCode=691&Op=1&Refresh=1&detectDansLappli=false&UtiCode=5638
+
+// https://qualios.ast.aero/servlet/Tbord.AfficheObjetStat
+// ?NomObj=TDBControleOpeGalerie&Param=&Filtre=%2D1%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21datedesaisie%40%40%3B%40%405%40%40%3B%40%4001%2F01%2F2021%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%402%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21datedesaisie%40%40%3B%40%404%40%40%3B%40%4031%2F12%2F2022%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%402%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21compagnie%40%40%3B%40%400%40%40%3B%40%40%5BTous%5D%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%400%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21Entite%40%40%3B%40%400%40%40%3B%40%40%5BTous%5D%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%400%40%40%3B%40%400%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%40TRI%2DFO%2D059%21%2E%21Plateforme%40%40%3B%40%400%40%40%3B%40%40%5BTous%5D%40%40%3B%40%40%3CNULL%3E%40%40%3B%40%400%40%40%3B%40%40&RelCritereUti=2&Orient=1&ModCode=691&Op=1&Refresh=1&detectDansLappli=false&UtiCode=5638
 
 
-"NomObj=" + EncodeParametres(pCalque.id) + "&Param=" + EncodeParametres(pCalque.getAttribute("PARAM")) + "&Filtre=" + EncodeParametres(cFiltre) + cRelCritereUti + "&Orient=" + EncodeParametres(cOrientation) + "&ModCode=" + EncodeParametres(pCalque.getAttribute("MODCODE")) + "&Op=" + EncodeParametres(pCalque.getAttribute("TAG")) + "&Refresh=" + EncodeParametres(cAfficheRefresh) + "&detectDansLappli=" + detectDansLappli() + "&UtiCode=" + jQueryAppli.find("#Uti_UtiCode").val()
+// "NomObj=" + EncodeParametres(pCalque.id) + "&Param=" + EncodeParametres(pCalque.getAttribute("PARAM")) + "&Filtre=" + EncodeParametres(cFiltre) + cRelCritereUti + "&Orient=" + EncodeParametres(cOrientation) + "&ModCode=" + EncodeParametres(pCalque.getAttribute("MODCODE")) + "&Op=" + EncodeParametres(pCalque.getAttribute("TAG")) + "&Refresh=" + EncodeParametres(cAfficheRefresh) + "&detectDansLappli=" + detectDansLappli() + "&UtiCode=" + jQueryAppli.find("#Uti_UtiCode").val()
