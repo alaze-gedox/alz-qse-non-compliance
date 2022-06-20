@@ -6,11 +6,6 @@ function display() {
     DisplayColumns('Row_INAD', '1');
 }
 
-function refreshTDB() {
-    var serverURL = `${location.protocol}//${location.host}/`;
-    RefreshTousLesObjTBord(serverURL);
-}
-
 
 class DateQSE {
     constructor() {
@@ -60,7 +55,6 @@ class DateQSE {
     #setup() {
         this.#setupDate();
         this.#setupPeriode();
-        refreshTDB();
     }
 }
 
@@ -108,9 +102,17 @@ class QseFoCountNC extends QseFoBase {
     #firstDestinationRow;
     #secondDestinationRow;
     
-    constructor(idSourceData, idDestinationData, ncColumnTitle) {
-        super(idSourceData, idDestinationData, "date", true, "Année N-1");
-        this.#ncColumnNumber = this.#getNcColumnNumber(ncColumnTitle);
+    constructor(idSourceData, ...args) { // idDestinationData, ncColumnTitle) {
+        if(!args[0]) {
+            throw Error("Missing arguments");
+        }
+
+        if(!args[1]) {
+            args[1] = "Nombre NC";
+        }
+
+        super(idSourceData, args[0], "date", true, "Année N-1");
+        this.#ncColumnNumber = this.#getNcColumnNumber(args[1]);
         this.#dataTitles = Array.from($(`#OBJ_TABSTAT${ this.idSourceData }`), (title, _) => title.firstChild.textContent);
         this.#dataLines = $(this._idSourceData).find("tr").toArray();
         
@@ -174,34 +176,46 @@ class QseFoCountNC extends QseFoBase {
     }
 }
 
-function exec() {
-    display();
-    new DateQSE();
 
-    // setTimeout(_ => {
-        // let ncbc = new QseFoCountNC("TDBControleOpePisteParis", "TableauxControleOpePisteAnnee_1", "");
-        // ncbc.do();    
-    // }, 15000);
+function refreshDashboard(dashboard, url) {
+    const jqueryDashboard = $(`#${dashboard.id}`);
+    const DASHBOARD_ARGS = calculFiltreObjTbord(jqueryDashboard.attr("FILTRE").split("@@;@@"), false, 0, url);
+    const data = {
+		NomObj: jqueryDashboard.id,
+		Param: jqueryDashboard.attr("PARAM"),
+		Filtre: DASHBOARD_ARGS[1],
+		RelCritereUti: jqueryDashboard.attr("RELCRITEREUTI"),
+		Orient: jqueryDashboard.attr("ORIENTATION"),
+		ModCode: jqueryDashboard.attr("MODCODE"),
+		Op: jqueryDashboard.attr("TAG"),
+		Refresh: DASHBOARD_ARGS[0],
+		detectDansLappli: detectDansLappli(),
+		UtiCode: jQueryAppli.find("#Uti_UtiCode").val()
+	};
 
-    let boardTables = [
-        "TDBToucheesBrutes", "TDBQuotidien", "TDBControleOpePassage",
-        "TDBControleOpePisteParis", "TDBControleOpePisteAF", "TDBControleOpePisteProvince",
-        "TDBControleOpePisteBru", "TDBControleOpeTrafic", "TDBControleOpeTraficBru",
-        "TDBControleOpeTraficAF", "TDBControleOpeGalerie"
+    $.ajax({
+		url: url,
+		method: "GET",
+		headers: {"Content-Type": lFormatURLEncoded},
+		data: data,
+	}).done(response => {
+		$(jqueryDashboard).html(response);
+        let dashboardClass = eval(`new ${dashboard.klass}("${dashboard.id}", ...${JSON.stringify(dashboard.args)})`);
+        dashboardClass.do();
+	})
+}
+
+function exec() {    
+    const URL = `${location.protocol}//${location.host}/servlet/Tbord.AfficheObjetStat`;
+    const DASHBOARDS = [
+        {
+            id: "TDBControleOpeTrafic",
+            klass: "QseFoCountNC",
+            args: ["TableauxControleOpeTraficAnnee"]
+        }
     ]
 
-    var allTablesAreNotLoaded = true
-    while(allTablesAreNotLoaded) {
-        var isLoaded = [];
-        boardTables.forEach(tableId => {
-            isLoaded.push(Boolean($(`#${ tableId }`).find("table").length));
-        });
-
-        if (isLoaded.every(elementIsLoaded => { return elementIsLoaded })) {
-            allTablesAreNotLoaded = false;
-        } else {
-            setTimeout(_ => {}, 5000);
-        }
-    }
+    new DateQSE();
+    DASHBOARDS.forEach(dashboard => refreshDashboard(dashboard, URL));
 }
 exec();

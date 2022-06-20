@@ -107,25 +107,33 @@ function AfficheObjTBord(pCalque, url, pFirstTime, pTabCalque, pIndiceCalque) {
         + "&UtiCode=" + jQueryAppli.find("#Uti_UtiCode").val())
 }
 
-$.ajax({
-	url: `${location.protocol}//${location.host}/`,
-	method: "GET",
-	headers: {"Content-Type": lFormatURLEncoded},
-	data: {},
-	success: response => {},
-}).done(() => {})
-var tableResult = calculFiltreObjTbord(firstTab.getAttribute("FILTRE").split("@@;@@"), false, 0, `${location.protocol}//${location.host}/`);
-var data = {
-	NomObj: firstTab.id,
-	Param: firstTab.getAttribute("PARAM"),
-	Filtre: tableResult[1],
-	RelCritereUti: firstTab.getAttribute("RELCRITEREUTI"),
-	Orient: firstTab.getAttribute("ORIENTATION"),
-	ModCode: firstTab.getAttribute("MODCODE"),
-	Op: firstTab.getAttribute("TAG"),
-	Refresh: tableResult[0],
-	detectDansLappli: detectDansLappli(),
-	UtiCode: jQueryAppli.find("#Uti_UtiCode").val()
+
+
+function refreshDashboard(dashboard) {
+	const URL = `${location.protocol}//${location.host}/servlet/Tbord.AfficheObjetStat`;
+	const DASHBOARD_ARGS = calculFiltreObjTbord(dashboard.getAttribute("FILTRE").split("@@;@@"), false, 0, URL);
+
+	var data = {
+		NomObj: dashboard.id,
+		Param: dashboard.getAttribute("PARAM"),
+		Filtre: DASHBOARD_ARGS[1],
+		RelCritereUti: dashboard.getAttribute("RELCRITEREUTI"),
+		Orient: dashboard.getAttribute("ORIENTATION"),
+		ModCode: dashboard.getAttribute("MODCODE"),
+		Op: dashboard.getAttribute("TAG"),
+		Refresh: DASHBOARD_ARGS[0],
+		detectDansLappli: detectDansLappli(),
+		UtiCode: jQueryAppli.find("#Uti_UtiCode").val()
+	}
+	
+	$.ajax({
+		url: URL,
+		method: "GET",
+		headers: {"Content-Type": lFormatURLEncoded},
+		data: data,
+	}).done(response => {
+		$(dashboard).html(response);
+	})
 }
 
 // https://qualios.ast.aero/servlet/Tbord.AfficheObjetStat
