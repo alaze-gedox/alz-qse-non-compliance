@@ -63,7 +63,9 @@ class QseFoBase {
     _ADD_BUTTON_BASE;
     _idSourceData;
     _idDestinationData;
+    _dataLines;
     _dateTitle;
+    _dataTitles;
 
     constructor(idSourceData, idDestinationData, dateTitle, addLine=false, newLineTitle=null) {
         // ABSTRACT
@@ -78,10 +80,13 @@ class QseFoBase {
         // CONST
         this._ADD_BUTTON_BASE = "#lien_btnAjLigne_";
         const QUALIOS_BASE_TABLE = "#TAB_OBJSTAT";
-
+        // TABLES
         this._idSourceData = QUALIOS_BASE_TABLE.concat(idSourceData);
         this._idDestinationData = `table#${idDestinationData}_1`;
+        this._dataLines = $(this._idSourceData).find("table.LstTableStat tbody tr").toArray();
+        // TITLES
         this._dateTitle = dateTitle;
+        this._dataTitles = Array.from($(this._idSourceData).find("table thead tr th"), (title, _) => title.firstChild ? title.firstChild.textContent : null);
 
         if (addLine) {
             this._addTableRow($(this._ADD_BUTTON_BASE.concat(idDestinationData)), newLineTitle);
@@ -90,60 +95,56 @@ class QseFoBase {
 
     _addTableRow(addButton, title) {
         addButton.click();
-        $(this.idDestinationData).find("tr").last().find("td input").first().val(title);
+        $(this._idDestinationData).find("tr").last().find("td input").first().val(title);
+    }
+
+    _getTitlePosition(title) {
+        return this._dataTitles.indexOf(title);
+    }
+
+    _getLineValueByTitle(title, line) {
+        return $(line).find("td").get(this._getTitlePosition(title)).firstChild.textContent;
+    }
+
+    _getDateElement2Number(line, element) {
+        let lineData = this._getLineValueByTitle(this._dateTitle, line);
+        return lineData ? Number(lineData.split("/")[element]) : -1;
+    }
+
+    _getLineMonth2Number(line) {
+        return this._getDateElement2Number(line, 1);
+    }
+
+    _getLineYear2Number(line) {
+        return this._getDateElement2Number(line, 2);
     }
 }
 
 
 class QseFoCountNC extends QseFoBase {
-    #ncColumnNumber;
-    #dataTitles;
-    #dataLines;
+    #dataId;
     #firstDestinationRow;
     #secondDestinationRow;
+    #maxNc;
+    #maxNcByMonthByYear;
     
     constructor(idSourceData, ...args) { // idDestinationData, ncColumnTitle) {
         if(!args[0]) {
             throw Error("Missing arguments");
         }
 
-        if(!args[1]) {
-            args[1] = "Nombre NC";
-        }
+        super(idSourceData, args[0], "Date", true, "Année N-1");
 
-        super(idSourceData, args[0], "date", true, "Année N-1");
-        this.#ncColumnNumber = this.#getNcColumnNumber(args[1]);
-        this.#dataTitles = Array.from($(`#OBJ_TABSTAT${ this.idSourceData }`), (title, _) => title.firstChild.textContent);
-        this.#dataLines = $(this._idSourceData).find("tr").toArray();
-        
-        this.#firstDestinationRow = $(this._idDestinationData).find("tr").first();
-        this.#secondDestinationRow = $(this._idDestinationData).find("tr").last();
+        this.#dataId = !args[1] ? "Nombre NC" : args[1];
+        this.#firstDestinationRow = $(this._idDestinationData).find("tbody tr").first();
+        this.#secondDestinationRow = $(this._idDestinationData).find("tbody tr").last();
+        // MAX NC
+        this.#maxNc = Number($(this._dataLines).first().find("td[title='NBNC']").get(0).firstChild.data);
+        this.#maxNcByMonthByYear = [Array(12).fill(false), Array(12).fill(false)]
     }
 
-    #getTitlePosition(title) {
-        return this.#dataTitles.indexOf(title);
-    }
-
-    #getNcColumnNumber(ncColumnTitle) {
-        var titles = [];
-        $(this._idSourceData).find("thead tr th").toArray().forEach(
-            title => titles.push(title.firstChild.textContent)
-        );
-        return titles.indexOf(ncColumnTitle);
-    }
-
-    #getLineValueByTitle(title, line) {
-        return $(line).find("td").get(this.#getTitlePosition(title)).firstChild.textContent;
-    }
-
-    #lineMonth2number(line) {
-        let lineData = this.#getLineValueByTitle(this._dateTitle, line);
-        return lineData ? Number(lineData.split("/")[1]) : -1;
-    }
-    
     #isSelectedYear(line) {
-        let lineDate = this.#getLineValueByTitle(this._dateTitle, line);
-        return lineDate.split("/")[2] == $("#AnneeN");
+        return this._getLineYear2Number(line) == Number($("#AnneeN").val());
     }
 
     #addToInputField(inputField, value) {
@@ -151,28 +152,72 @@ class QseFoCountNC extends QseFoBase {
         return inputField.val();
     }
 
-    #getTableInputByCoord(tableId, lineCoord, inputCoord) {
-        let line = $(tableId).get(lineCoord);
-        let input = $(line).find("td input").get(inputCoord);
+    #getTableInputByCoord(tableId, dataLine, inputCoord) {
+        let resultLine = $(tableId).find("tbody tr").get(this.#isSelectedYear(dataLine) ? 0 : 1);
+        let input = $(resultLine).find("td input").get(inputCoord);
         return $(input);
     }
 
-    do() {
-        this.#dataLines.forEach(line => {
-            let monthColumn = this.#lineMonth2number(line);
-            let lineValue = line.find("td")[this.#ncColumnNumber].firstChild.textContent;
+    #countNc() {
+        this._dataLines.forEach(line => {
+            let monthColumn = this._getLineMonth2Number(line);
+            let lineValue = Number($(line).find(`td[title='${ this.#dataId }']`).get(0).firstChild.textContent)
 
             if (monthColumn > 0 && monthColumn < 13 && lineValue > 0) {
-                this.#addToInputField(
-                    this.#getTableInputByCoord(
-                        this._idDestinationData,
-                        this.#isSelectedYear(line) ? 0 : 1,
-                        monthColumn
-                    ),
-                    1
-                );
+                // Only two rows then converting Boolean to Number
+                this.#maxNcByMonthByYear[Number(!this.#isSelectedYear(line))][monthColumn - 1] += this.#maxNc;
+
+                if (lineValue > 0) {
+                    this.#addToInputField(
+                        this.#getTableInputByCoord(this._idDestinationData, line, monthColumn),
+                        lineValue
+                    );
+                }
             }
         });
+    }
+
+    #sumNc() {
+        [this.#firstDestinationRow, this.#secondDestinationRow].forEach(destination => {
+            let ncToSum = Array.from($(destination).find("td input"), (input, _) => Number($(input).val()))
+            ncToSum.shift();
+            ncToSum.pop();
+            $($(destination).find("input")[13]).val((ncToSum.reduce((a,b) => {return a+b})));
+        });
+    }
+    
+    #percentNcByMonth() {
+        this.#maxNcByMonthByYear.forEach((ncBymonth, yearLine) => {
+            let line = yearLine == 0 ? this.#firstDestinationRow : this.#secondDestinationRow;
+            ncBymonth.forEach((nc, month) => {
+                if (nc) {
+                    let input = $(line.find("td input")[month + 1]);
+                    input.val(
+                        ((Number(input.val()) * 100) / nc).toFixed(2)
+                    );
+                }
+            })
+        })
+    }
+    
+    #percentNcByYear() {
+        this.#maxNcByMonthByYear.forEach((ncByMonth, yearLine) => {
+            let sumNcByMonth = ncByMonth.reduce((a, b) => {return a+b});
+            let line = yearLine == 0 ? this.#firstDestinationRow : this.#secondDestinationRow;
+            let input = $(line.find("input")[13]);
+            $(input).val(
+                ((Number(input.val()) * 100) / sumNcByMonth).toFixed(2)
+            );
+        });
+    }
+
+    do() {
+        // COUNT AND SUM NC
+        this.#countNc();
+        this.#sumNc();
+        // CALCULATE NC PERCENT
+        this.#percentNcByMonth();
+        this.#percentNcByYear();
     }
 }
 
@@ -181,7 +226,7 @@ function refreshDashboard(dashboard, url) {
     const jqueryDashboard = $(`#${dashboard.id}`);
     const DASHBOARD_ARGS = calculFiltreObjTbord(jqueryDashboard.attr("FILTRE").split("@@;@@"), false, 0, url);
     const data = {
-		NomObj: jqueryDashboard.id,
+		NomObj: jqueryDashboard.attr("id"),
 		Param: jqueryDashboard.attr("PARAM"),
 		Filtre: DASHBOARD_ARGS[1],
 		RelCritereUti: jqueryDashboard.attr("RELCRITEREUTI"),
@@ -205,14 +250,31 @@ function refreshDashboard(dashboard, url) {
 	})
 }
 
-function exec() {    
+function exec() {
     const URL = `${location.protocol}//${location.host}/servlet/Tbord.AfficheObjetStat`;
     const DASHBOARDS = [
+        // Somme trafic...
         {
             id: "TDBControleOpeTrafic",
             klass: "QseFoCountNC",
             args: ["TableauxControleOpeTraficAnnee"]
-        }
+        },
+        {
+            id: "TDBControleOpePassage",
+            klass: "QseFoCountNC",
+            args: ["TableauxControleOpePassageAnnee"]
+        },
+        // Somme Piste...
+        {
+            id: "TDBControleOpePisteParis",
+            klass: "QseFoCountNC",
+            args: ["TableauxControleOpePisteAnnee"]
+        },
+        {
+            id: "TDBControleOpeGalerie",
+            klass: "QseFoCountNC",
+            args: ["TableauxControleOpeGalerieAnnee"]
+        },
     ]
 
     new DateQSE();
