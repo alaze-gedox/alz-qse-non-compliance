@@ -190,7 +190,7 @@ class Row {
 // MIXIN
 // =========================================
 let AddRowMixin = {
-    addRow(idTable, title="Année N-1") {
+    addRow(idTable) {
         let table = $(`#${idTable}_1`);
         $(`#lien_btnAjLigne_${idTable}`).click();
         $(table.find("tbody tr").last().find("input").get(0)).val(this.NEW_ROW_TITLE);
@@ -223,6 +223,7 @@ class PercentTable {
 class AnnualPercentTable extends PercentTable {
     #NON_COMPLIANCE_TITLE = "Nombre NC";
     #MAX_NON_COMPLIANCE_TITLE = "NBNC";
+    NEW_ROW_TITLE = "Année N-1";
     
     #id;
     #table;
@@ -377,6 +378,11 @@ class DisplayAnnualMonthlyPercentTables {
         this.#monthly.calculatePercent();
     }
 }
+function calculatePercentCompliance(idAnnual, idMonthly, dashboardIds) {
+    let dampt = new DisplayAnnualMonthlyPercentTables(idAnnual, idMonthly, dashboardIds);
+    dampt.calculate();
+}
+
 
 class DailySumTable {
     ID_DESTINATION; 
@@ -385,6 +391,7 @@ class DailySumTable {
     STATUS_VALUE = "Retard retenu";
     table;
     dashboard;
+    NEW_ROW_TITLE = "Année N-1";
     
     constructor(idDestination, idSource) {
         this.ID_DESTINATION = idDestination;
@@ -439,6 +446,10 @@ class DailySumTable {
     }
 }
 Object.assign(DailySumTable.prototype, AddRowMixin);
+function calculateSumByMonth(idDestination, idSource) {
+    let dst = DailySumTable(idDestination, idSource);
+    dst.calculate();
+}
 
 
 // ==========================================
@@ -496,6 +507,7 @@ class Date_QSE_FO_358 {
 }
 
 class TouchedTable_QSE_FO_358 {
+    NEW_ROW_TITLE = "Année N-1";
     displayTableId;
     table;
     dashboard;
@@ -619,14 +631,17 @@ Object.assign(DisplayTablesPonctuality_QSE_FO_358.prototype, AddRowMixin);
 function exec_QSE_FO_358() {
     new Date_QSE_FO_358();
     new DisplayTablesPonctuality_QSE_FO_358();
-    let tables = [
-        new DisplayAnnualMonthlyPercentTables("TableauxControleOpePassageAnnee", "TableauxControleOpePassageMois", ["TDBControleOpePassage"]),
-        new DisplayAnnualMonthlyPercentTables("TableauxControleOpePisteAnnee", "TableauxControleOpePisteMois", ["TDBControleOpePisteParis", "TDBControleOpePisteAF", "TDBControleOpePisteProvince", "TDBControleOpePisteBru"]),
-        new DisplayAnnualMonthlyPercentTables("TableauxControleOpeTraficAnnee", "TableauxControleOpeTraficMois", ["TDBControleOpeTrafic", "TDBControleOpeTraficBru", "TDBControleOpeTraficAF"]),
-        new DisplayAnnualMonthlyPercentTables("TableauxControleOpeGalerieAnnee", "TableauxControleOpeGalerieMois", ["TDBControleOpeGalerie"]),
-        new DailySumTable("TableauxInadAnnee", "TDBQuotidienInad")
+    let tablesPercentCompliance = [
+        ["TableauxControleOpePassageAnnee", "TableauxControleOpePassageMois", ["TDBControleOpePassage"]],
+        ["TableauxControleOpePisteAnnee", "TableauxControleOpePisteMois", ["TDBControleOpePisteParis", "TDBControleOpePisteAF", "TDBControleOpePisteProvince", "TDBControleOpePisteBru"]],
+        ["TableauxControleOpeTraficAnnee", "TableauxControleOpeTraficMois", ["TDBControleOpeTrafic", "TDBControleOpeTraficBru", "TDBControleOpeTraficAF"]],
+        ["TableauxControleOpeGalerieAnnee", "TableauxControleOpeGalerieMois", ["TDBControleOpeGalerie"]],
     ];
-    tables.forEach(table => table.calculate());
+    let tablesSumByMont = [
+        ["TableauxInadAnnee", "TDBQuotidienInad"],
+    ];
+    tablesPercentCompliance.forEach(table => calculatePercentCompliance(table[0], table[1], table[2]));
+    tablesSumByMont.forEach(table => calculateSumByMonth(table[0], table[1]));
 }
 
 
