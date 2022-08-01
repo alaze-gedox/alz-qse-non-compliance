@@ -1,15 +1,30 @@
 // ==========================================
 // DATA
 // ==========================================
+/**
+ * Class which represent data line
+ */
 class Line {
     #line;
     #columnDateIndex;
 
+    /**
+     * Constructor
+     * 
+     * @param {object} line - Line of a dashboard
+     * @param {Number} columnDateIndex - Index of column where date is stored 
+     */
     constructor(line, columnDateIndex) {
         this.#line = $(line);
         this.#columnDateIndex = columnDateIndex;
     }
 
+    /**
+     * Get line date with column index
+     * 
+     * @param {Number} dateElementIndex 
+     * @returns {date}
+     */
     #getDateElement(dateElementIndex) {
         let element = this.#line
                 .find("td")
@@ -25,18 +40,31 @@ class Line {
         return element;
     }
 
+    /**
+     * @returns {object} JQuery line
+     */
     getLine() {
         return $(this.#line);
     }
 
+    /**
+     * @returns {Number} line month
+     */
     getMonth() {
         return Number(this.#getDateElement(1));
     }
 
+    /**
+     * @returns {Number} line year
+     */
     getYear() {
         return Number(this.#getDateElement(2));
     }
 
+    /**
+     * @param {Number} columnIndex 
+     * @returns {string} line value
+     */
     getValue(columnIndex) {
         if (this.#line.find("td").get(columnIndex).firstChild == null) {
             throw Error("Empty value");
@@ -49,23 +77,40 @@ class Line {
             .textContent;
     }
 
+    /**
+     * @param {Number} columnIndex 
+     * @returns {string} line value
+     */
     getNumericValue(columnIndex) {
         return Number(this.getValue(columnIndex).replace(/\s+/g, ''));
     }
 }
 
-
+/**
+ * Class which represent dashboard
+ * 
+ * @class Dashboard
+ */
 class Dashboard {
     #id;
     #titles;
     #dateTitle;
     #lines;
 
+    /**
+     * Constructor
+     * 
+     * @param {string} id - Dashboard ID
+     * @param {string} dateTitle - Column title where date is stored
+     */
     constructor(id, dateTitle) {
         this.#id = `#${id}`;
         this.#dateTitle = dateTitle;
     }
     
+    /**
+     * Refreshing class content
+     */
     #update() {
         this.#titles = Array.from(
             $(this.#id).find("table thead tr th").toArray(),
@@ -76,14 +121,29 @@ class Dashboard {
             line => new Line(line, this.getColumnIndex(this.#dateTitle))
         );
     }
+
+    /**
+     * Get all dashboard line
+     * 
+     * @returns {object} - All dashboard lines
+     */
     getLines() {
         return this.#lines;
     }
 
+    /**
+     * Get column index with column title
+     * 
+     * @param {string} columnTitle - Column title
+     * @returns {Number} - Column index
+     */
     getColumnIndex(columnTitle) {
         return this.#titles.indexOf(columnTitle);
     }
 
+    /**
+     * Refreshing dashboard on page
+     */
     refreshDashboard() {
         const URL = `${location.protocol}//${location.host}/servlet/Tbord.AfficheObjetStat`;
         const JQUERY_DASHBOARD = $(this.#id);
@@ -118,77 +178,153 @@ class Dashboard {
 // =========================================
 // TABLE BASE
 // =========================================
+/**
+ * Class which represent destination table input field
+ */
 class Input {
     #input;
     #max = 0;
     #nc = 0;
     
+    /**
+     * Constructor 
+     * 
+     * @param {object} input - Input field
+     */
     constructor(input) {
         this.#input = $(input);
     }
     
+    /**
+     * Adding value to nc
+     * 
+     * @param {Number} value - Value to add
+     */
     addNc(value) {
         this.#nc += value;
     }
     
+    /**
+     * Adding value to max
+     * 
+     * @param {Number} value = Value to add
+     */
     addMax(value) {
         this.#max += value;
     }
     
+    /**
+     * Adding value to val
+     * 
+     * @param {Number} value - Value to add
+     */
     addVal(value) {
         this.#input.val(Number(this.#input.val()) + value);
     }
 
+    /**
+     * value getter
+     * 
+     * @returns {Number}
+     */
     getVal() {
         return this.#input.val();
     }
     
+    /**
+     * value setter
+     * 
+     * @param {Number} value
+     */
     setVal(value) {
         this.#input.val(value);
     }
     
+    /**
+     * max getter
+     * 
+     * @returns {Number}
+     */
     getMax() {
         return this.#max;
     }
     
+    /**
+     * nc getter
+     * 
+     * @returns  {Number}
+     */
     getNc() {
         return this.#nc;
     }
 }
 
+/**
+ * Class which represent destination table row
+ */
 class Row {
     #title;
     #global;
     #inputs = [];
 
+    /**
+     * Constructor
+     * 
+     * @param {object} row - table row
+     */
     constructor(row) {
         $(row).find("input").toArray().forEach(input => this.#inputs.push(new Input(input)));
         this.#title = this.#inputs.shift();
         this.#global = this.#inputs.pop();
     }
 
+    /**
+     * inputs getter
+     * 
+     * @returns {Array}
+     */
     getInputs() {
         return this.#inputs;
     }
 
+    /**
+     * Add value to input with column index
+     * 
+     * @param {Number} column - column index
+     * @param {Number} value - value to add
+     */
     addInputNc(column, value) {
         let input = this.#inputs[column - 1];
         input.addNc(value);
     }
 
+    /**
+     * 
+     * @param {*} column 
+     * @param {*} value 
+     */
     addInputMax(column, value) {
         let input = this.#inputs[column - 1];
         input.addMax(value);
     }
     
+    /**
+     * Get global input
+     * 
+     * @returns {object}
+     */
     getGlobal() {
         return this.#global;
     }
 }
 
+
 // =========================================
 // MIXIN
 // =========================================
+/**
+ * Mixin to add row
+ */
 let AddRowMixin = {
     addRow(idTable) {
         let table = $(`#${idTable}_1`);
@@ -201,25 +337,64 @@ let AddRowMixin = {
 // =========================================
 // GENERIC CALULATING
 // =========================================
+/**
+ * Abstract class to calculate compliance rate
+ * 
+ * @class PercentTable
+ */
 class PercentTable {
+    /**
+     * Constructor
+     */
+    constructor() {
+        // ABSTRACT
+        if (this == PercentTable) {
+            throw new Error("Abstract class can't be instanciate");
+        }
+    }
+
+    /**
+     * Abstract method to count non compliance
+     * 
+     * @param {string} dashboard 
+     */
     countNc(dashboard) {
         throw new Error("countNc must be implemented");
     }
 
+    /**
+     * Abstract method to calculate percent
+     */
     calculatePercent() {
         throw new Error("calculatePercent must be implemented");
     }
 
+    /**
+     * Calculating percent and storing it in input
+     * 
+     * @param {object} input - Input where data will be saved
+     */
     _getPercent(input) {
         let percent = 100 - ((100 * input.getNc()) / input.getMax());
         input.setVal(!isNaN(percent) ? percent.toFixed(2) : "N/A");
     }
 
+    /**
+     * Get destination table
+     * 
+     * @param {string} id - Table destination id
+     * @returns 
+     */
     _getTable(id) {
         return $(`#${id}_1`);
     }
 }
 
+/**
+ * Class to calculate compliance rate on a year
+ * 
+ * @class AnnualPercentTable
+ */
 class AnnualPercentTable extends PercentTable {
     #NON_COMPLIANCE_TITLE = "Nombre NC";
     #MAX_NON_COMPLIANCE_TITLE = "NBNC";
@@ -229,6 +404,10 @@ class AnnualPercentTable extends PercentTable {
     #table;
     #rowsByYear;
 
+    /**
+     * 
+     * @param {string} id - Table id where data are displayed
+     */
     constructor(id) {
         super();
         this.#id = id;
@@ -240,20 +419,32 @@ class AnnualPercentTable extends PercentTable {
         }
     }
 
-    // #addRow(id, rowTitle) {
-    //     $(`#lien_btnAjLigne_${this.#id}`).click();
-    //     $(this.#table.find("tbody tr").last().find("input").get(0)).val(rowTitle);
-    // }
-
+    /**
+     * Check if year line is selected year
+     * 
+     * @param {Number} year - year of dashboard selected line
+     * @returns {Number}
+     */
     #isSelectedYear(year) {
         const SELECTED_YEAR_ID = "#Annee";
         return Number($(SELECTED_YEAR_ID).val()) == year;
     }
 
+    /**
+     * Get table row with year 
+     * 
+     * @param {Number} year - year of dashboard selected line
+     * @returns {object} - table row
+     */
     #getTableRow(year) {
         return this.#isSelectedYear(year) ? this.#rowsByYear.selectedYear : this.#rowsByYear.selectedYearMinusOne;
     }
 
+    /**
+     * Counting all non-compliance for a dashboard
+     * 
+     * @param {object} dashboard - dashboard objects
+     */
     countNc(dashboard) {
         dashboard.getLines().forEach(line => {
             let maxNonCompliance = Number(
@@ -274,6 +465,9 @@ class AnnualPercentTable extends PercentTable {
         })
     }
 
+    /**
+     * Calculate percent for each input
+     */
     calculatePercent() {
         Object.keys(this.#rowsByYear).forEach(key => {
             let row = this.#rowsByYear[key];
@@ -289,12 +483,22 @@ class AnnualPercentTable extends PercentTable {
 }
 Object.assign(AnnualPercentTable.prototype, AddRowMixin);
 
-
+/**
+ * Class to calculate compliance rate for the selected month
+ * 
+ * @class MonthlyPercentTable
+ * @extend PercentTable
+ */
 class MonthlyPercentTable extends PercentTable {
     #table;
     #complianceInput;
     #inputs;
     
+    /**
+     * Constructor
+     * 
+     * @param {string} id - table id
+     */
     constructor(id) {
         super();
         this.#table = this._getTable(id);
@@ -332,6 +536,11 @@ class MonthlyPercentTable extends PercentTable {
         ]
     }
 
+    /**
+     * Counting non compliance for the selected month by non compliance type
+     * 
+     * @param {object} dashboard - source dashboard
+     */
     countNc(dashboard) {
         dashboard.getLines().forEach(line => {
             if (
@@ -347,6 +556,9 @@ class MonthlyPercentTable extends PercentTable {
         });
     }
 
+    /**
+     * Calculating compliance rate by non compliance type for the selected month 
+     */
     calculatePercent() {
         this.#inputs.forEach(input => {
             this._getPercent(input.input);
@@ -354,18 +566,33 @@ class MonthlyPercentTable extends PercentTable {
     }
 }
 
+/**
+ * Class to calculate compliance rate by month for a year and by non compliance type for the selected month
+ * 
+ * @class DisplayAnnualMonthlyPercentTables
+ */
 class DisplayAnnualMonthlyPercentTables {
     #DATE_TITLE = "Date";
     #annual;
     #monthly;
     #dashboards;
 
+    /**
+     * Constructor
+     * 
+     * @param {string} idAnnual - Annual table ID
+     * @param {string} idMonthly - Monthly table ID
+     * @param {string} dashboardIds - Data dashboards ID
+     */
     constructor(idAnnual, idMonthly, dashboardIds) {
         this.#annual = new AnnualPercentTable(idAnnual);
         this.#monthly = new MonthlyPercentTable(idMonthly);
         this.#dashboards = Array.from(dashboardIds, dashboardId => new Dashboard(dashboardId, this.#DATE_TITLE));
     }
 
+    /**
+     * Calculating compliance rate
+     */
     calculate() {
         this.#dashboards.forEach(dashboard => {
             dashboard.refreshDashboard()
@@ -378,12 +605,23 @@ class DisplayAnnualMonthlyPercentTables {
         this.#monthly.calculatePercent();
     }
 }
+/**
+ * Function to calculate compliance rate by month for a year and by non compliance type for the selected month
+ * 
+ * @param {string} idAnnual - Annual table ID
+ * @param {string} idMonthly - Monthly table ID
+ * @param {string} dashboardIds - Data dashboards ID
+ */
 function calculatePercentCompliance(idAnnual, idMonthly, dashboardIds) {
     let dampt = new DisplayAnnualMonthlyPercentTables(idAnnual, idMonthly, dashboardIds);
     dampt.calculate();
 }
 
-
+/**
+ * Class to sum non compliance
+ * 
+ * @class DailySumTable
+ */
 class DailySumTable {
     ID_DESTINATION; 
     ID_SOURCE;
@@ -393,6 +631,12 @@ class DailySumTable {
     dashboard;
     NEW_ROW_TITLE = "Année N-1";
     
+    /**
+     * Constructor
+     * 
+     * @param {string} idDestination - table ID where data are displayed
+     * @param {string} idSource - Dashboard ID
+     */
     constructor(idDestination, idSource) {
         this.ID_DESTINATION = idDestination;
         this.ID_SOURCE = idSource;
@@ -401,19 +645,38 @@ class DailySumTable {
         this.addRow(this.ID_DESTINATION);
     }
     
+    /**
+     * Table ID getter
+     * 
+     * @returns {string}
+     */
     getTableId() {
         return this.ID_DESTINATION;
     }
     
+    /**
+     * Table getter
+     * 
+     * @returns {object}
+     */
     getTable() {
         return this.table;
     }
     
+    /**
+     * Get table row where data must be wrote
+     * 
+     * @param {Numner} year - Dashboard line year
+     * @returns table row where data must be write
+     */
     getTableRow(year) {
         const SELECTED_YEAR_ID = "#Annee";
         return Number($(SELECTED_YEAR_ID).val() != year);
     }
     
+    /**
+     * Summing non compliance by month
+     */
     sumMonthly() {
         this.dashboard.getLines().forEach(line => {
             let row = $(this.table.find("tbody tr")).toArray()[this.getTableRow(line.getYear())];
@@ -425,6 +688,9 @@ class DailySumTable {
         })
     }
 
+    /**
+     * Summing all month
+     */
     sumGlobal() {
         $(this.table.find("tbody tr")).toArray().forEach(row => {
             let inputs = $(row).find("input");
@@ -439,6 +705,9 @@ class DailySumTable {
         });
     }
 
+    /**
+     * Executing sum
+     */
     calculate() {
         this.dashboard.refreshDashboard();
         this.sumMonthly();
@@ -446,6 +715,12 @@ class DailySumTable {
     }
 }
 Object.assign(DailySumTable.prototype, AddRowMixin);
+/**
+ * Function to sum non compliance
+ * 
+ * @param {string} idDestination - Table ID
+ * @param {string} idSource - Dashboard ID
+ */
 function calculateSumByMonth(idDestination, idSource) {
     let dst = DailySumTable(idDestination, idSource);
     dst.calculate();
@@ -453,205 +728,22 @@ function calculateSumByMonth(idDestination, idSource) {
 
 
 // ==========================================
-// QSE_FO_358
-// ==========================================
-class Date_QSE_FO_358 {
-    constructor() {
-        this._YEAR = Number($("#Annee").val());
-        this._MONTH = this.#month2str($("#Mois").val());
-        this._DATE = new Date(this._YEAR, this._MONTH, 1);
-        this.#setup();
-    }
-
-    #month2str(month) {
-        let monthList = $("#Mois option").map(function() { return $(this).val() }).toArray();
-        monthList.shift();
-        return Number(monthList.indexOf(month));
-    }
-
-    #twoDigitDate(number) {
-        return number > 9 ? number.toString() : `0${number}`;
-    }
-
-    #date2str(date) {
-        return `${this.#twoDigitDate(date.getDate())}/${this.#twoDigitDate(date.getMonth() + 1)}/${date.getFullYear()}`;
-    }
-
-    #setupPeriode() {
-        $("#MoisPeriode").val(this.#twoDigitDate(this._DATE.getMonth() + 1));
-        [...Array(3).keys()].forEach(number => {
-            number++;
-            let dateCopy = new Date(this._DATE.getTime());
-            dateCopy.setMonth(dateCopy.getMonth() - (number));
-            $(`#AnneePeriodeMoins${number}`).val(this.#twoDigitDate(dateCopy.getFullYear()));
-            $(`#MoisPeriodeMoins${number}`).val(this.#twoDigitDate(dateCopy.getMonth() + 1));
-        });
-    }
-
-    #setupDate() {
-        // YEAR
-        $("#AnneeN").val(this._YEAR);
-        $("#AnneeNMoins1").val(this._YEAR - 1);
-        // DATE
-        $("#DateDebutAnneeNMoins1").val(this.#date2str(new Date(this._YEAR - 1, 0, 1)));
-        $("#DateFinAnneeN").val(this.#date2str(new Date(this._YEAR + 1, 0, 0)));
-        // MONTH
-        $("#DateDebutMoisN").val(this.#date2str(this._DATE));
-        $("#DateFinMoisN").val(this.#date2str(new Date(this._YEAR, this._MONTH + 1, 0)));
-    }
-
-    #setup() {
-        this.#setupDate();
-        this.#setupPeriode();
-    }
-}
-
-class TouchedTable_QSE_FO_358 {
-    NEW_ROW_TITLE = "Année N-1";
-    displayTableId;
-    table;
-    dashboard;
-    dashboardId = "TDBToucheesBrutes";
-    monthEquivalent = {
-        janvier: 1,
-        février: 2,
-        mars: 3,
-        avril: 4,
-        mai: 5,
-        juin: 6,
-        juillet: 7,
-        août: 8,
-        septembre: 9,
-        octobre: 10,
-        novembre: 11,
-        décembre: 12
-    };
-
-    constructor(displayTableId) {
-        this.displayTableId = displayTableId;
-        this.table = $(`#${this.displayTableId}_1`);
-        this.dashboard = new Dashboard(this.dashboardId, "Année");
-        this.addRow(this.displayTableId);
-    }
-
-    getTableRow(year) {
-        const SELECTED_YEAR_ID = "#Annee";
-        return Number($(SELECTED_YEAR_ID).val() != year);
-    }
-    
-    getTable() {
-        return this.table;
-    }
-
-    getTableId() {
-        return this.displayTableId;
-    }
-    
-    sumByMonth() {
-        this.dashboard.getLines().forEach(line => {
-            let row = $(this.table.find("tbody tr")).toArray()[this.getTableRow(line.getValue(this.dashboard.getColumnIndex("Année")))];
-            let input = new Input($($(row).find("input").toArray()[this.monthEquivalent[line.getValue(this.dashboard.getColumnIndex("Mois")).toLowerCase().trim()]]));
-            let value = null;
-            
-            try {
-                value = line.getNumericValue(this.dashboard.getColumnIndex("Nombre de touchées brutes"));
-            } catch (error) {
-                value = 0;
-            } finally {
-                input.addVal(value);
-            }
-        });
-    }
-    
-    sumGlobal() {
-        $(this.table.find("tbody tr")).toArray().forEach(row => {
-            let inputs = $(row).find("input");
-
-            let listOfInputs = inputs.toArray();
-            listOfInputs.shift();
-            listOfInputs.pop();
-
-            inputs.last().val(
-                Array.from(listOfInputs, input => Number($(input).val())).reduce((a, b) => {return a + b})
-            );
-        });
-    }
-
-    calculate() {
-        this.dashboard.refreshDashboard();
-        this.sumByMonth();
-        this.sumGlobal();
-    }
-}
-Object.assign(TouchedTable_QSE_FO_358.prototype, AddRowMixin);
-
-
-class DisplayTablesPonctuality_QSE_FO_358 {
-    TOUCHED = new TouchedTable_QSE_FO_358("TableauxTouches");
-    DAILY = new DailySumTable("TableauxDl", "TDBQuotidien");
-    ID_DESTINATION = "TableauxTauxPonctualite";
-    table;
-
-    constructor() {
-        this.table = `#${this.ID_DESTINATION}_1`;
-        
-        [this.TOUCHED, this.DAILY].forEach(table => {
-            // this.#addRow(table.getTableId());
-            table.calculate();
-        });
-
-        this.addRow(this.ID_DESTINATION);
-        this.calculate();
-    }
-    
-    getInputValue(table, rowId, inputId) {
-        return $($(table.find("tbody tr").toArray()[rowId]).find("input").toArray()[inputId]).val();
-    }
-    
-    calculate() {
-        let rows = $(this.table).find("tbody tr").toArray();
-
-        for (let rowId = 0; rowId < rows.length; rowId++) {
-            let inputs = $(rows[rowId]).find("input").toArray();
-            inputs.shift();
-
-            for (let inputId = 0; inputId < inputs.length; inputId++) {
-                let touchedValue = Number(this.getInputValue(this.TOUCHED.getTable(), rowId, inputId + 1));
-                let dailyValue = Number(this.getInputValue(this.DAILY.getTable(), rowId, inputId + 1));
-                let value = ((touchedValue - dailyValue) / touchedValue) * 100;
-
-                $(inputs[inputId]).val(isNaN(value) || !Number.isFinite(value) ? "N/A" : value.toFixed(2));
-            }
-        };
-    }
-}
-Object.assign(DisplayTablesPonctuality_QSE_FO_358.prototype, AddRowMixin);
-
-
-function exec_QSE_FO_358() {
-    new Date_QSE_FO_358();
-    new DisplayTablesPonctuality_QSE_FO_358();
-    let tablesPercentCompliance = [
-        ["TableauxControleOpePassageAnnee", "TableauxControleOpePassageMois", ["TDBControleOpePassage"]],
-        ["TableauxControleOpePisteAnnee", "TableauxControleOpePisteMois", ["TDBControleOpePisteParis", "TDBControleOpePisteAF", "TDBControleOpePisteProvince", "TDBControleOpePisteBru"]],
-        ["TableauxControleOpeTraficAnnee", "TableauxControleOpeTraficMois", ["TDBControleOpeTrafic", "TDBControleOpeTraficBru", "TDBControleOpeTraficAF"]],
-        ["TableauxControleOpeGalerieAnnee", "TableauxControleOpeGalerieMois", ["TDBControleOpeGalerie"]],
-    ];
-    let tablesSumByMont = [
-        ["TableauxInadAnnee", "TDBQuotidienInad"],
-    ];
-    tablesPercentCompliance.forEach(table => calculatePercentCompliance(table[0], table[1], table[2]));
-    tablesSumByMont.forEach(table => calculateSumByMonth(table[0], table[1]));
-}
-
-
-// ==========================================
 // UTILS
 // ==========================================
+/**
+ * Disable dashboard autoreload when input value is changed
+ * 
+ * @param {object} input 
+ */
 function disableOneAutoRefresh(input) {
     input.attr("refresh_obj_tbord", "KO");
 }
 
+/**
+ * Disable dashboard autoreload for an input list
+ *  
+ * @param {object} inputs 
+ */
 function disableManyAutoRefresh(inputs) {
     $('[typeliste="ListePaginee"]').toArray().forEach(input => disableOneAutoRefresh($(input)));
 }
